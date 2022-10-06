@@ -1,0 +1,209 @@
+* {
+  color: black;
+  font-family: 'Clear Sans', Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1em;
+  font-size: clamp(0.5rem, 2.5vmin, 1.5rem);
+}
+
+h1 {
+  font-size: 2em;
+  text-align: center;
+  font-family: 'Arial Black', sans-serif;
+  margin-top: 0px;
+  margin-bottom: 1.5em;
+}
+
+.game-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+
+.tooltip {
+  position: absolute;
+  top: -2.8em;
+  display: inline-block;
+  width: fit-content;
+  margin: auto;
+  border-radius: 12px;
+  visibility: hidden;
+  text-align: center;
+  padding: 0.8em;
+  background-color: #333333;
+  font-weight: normal;
+  color: white;
+  margin-top: 0;
+}
+
+
+.tiles-container {
+  margin-bottom: 30px;
+  /* display: flex; */
+}
+
+.tiles-container div {
+  display: flex;
+}
+
+.tile {
+  display: flex;
+  font-size: 1.3em;
+  text-transform: uppercase;
+  width: 2.5em;
+  height: 2.5em;
+  border: 1px solid hsl(214, 8%, 84%);
+  justify-content: center;
+  align-items: center;
+  margin: 2px;
+  user-select: none;
+}
+
+
+
+.tiles-container .final-yellow {
+  background-color: hsl(49, 51%, 57%);
+  color: white;
+}
+
+.tiles-container .final-dark-gray {
+  background-color: hsl(200, 2%, 48%);
+  color: white;
+}
+
+.tiles-container .final-green {
+  background-color: hsl(115, 29%, 53%);
+  color: white;
+}
+
+.keyboard {
+  width: 510px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.keyboard button {
+  width: 43px;
+  height: 58px;
+  border-radius: 4px;
+  border: none;
+  /* background-color: hsl(214, 8%, 84%); */
+  margin: 4px;
+  outline: none;
+  user-select: none;
+}
+
+.keyboard button:nth-child(11) {
+  margin-left: 30px;
+}
+
+.keyboard button:nth-child(20),
+.keyboard button:nth-child(28) {
+  width: 68px;
+}
+
+[data-state="neutral"] {
+  background-color: lightgray;
+}
+
+[data-state="incorrect"] {
+  background-color: gray;
+  color: white;
+}
+
+[data-state="nonpositional"] {
+  background-color: darkgoldenrod;
+  color: white;
+}
+
+[data-state="correct"] {
+  background-color: green;
+  color: white;
+}
+
+
+.tile.shake {
+  animation: shake 600ms ease-in-out;
+}
+
+.tile.dance {
+  animation: dance 500ms ease-in-out;
+}
+
+.tile.flip {
+  transform: rotateX(90deg);
+}
+
+
+@keyframes shake {
+  12.5% {
+    transform: translateX(-8%);
+  }
+
+  25% {
+    transform: translateX(8%);
+  }
+
+  37.5% {
+    transform: translateX(-6%);
+  }
+
+  50% {
+    transform: translateX(6%);
+  }
+
+  62.5% {
+    transform: translateX(-4%);
+  }
+
+  75% {
+    transform: translateX(-4%);
+  }
+
+  87.5% {
+    transform: translateX(-2%);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes dance {
+  20% {
+    transform: translateY(-50%);
+  }
+
+  40% {
+    transform: translateY(5%);
+  }
+
+  60% {
+    transform: translateY(-25%);
+  }
+
+  80% {
+    transform: translateY(2.5%);
+  }
+
+  90% {
+    transform: translateY(-5%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
