@@ -1,9 +1,37 @@
+:root {
+  --green: #6aaa64;
+  --darkendGreen: #538d4e;
+  --yellow: #c9b458;
+  /* --darkendYellow: #b59f3b;
+  --spellingBeeYellow: #f7da21; */
+  --lightGray: #d3d6da;
+  --gray: #86888a;
+  --gray-2: #dcdcdc;
+  --gray-3: #dfdfdf;
+  --gray-4: #cccccc;
+  --darkGray: #939598;
+  --white: #fff;
+  --black: #212121;
+  --black-2: #121212;
+  --black-3: #363636;
+  --black-4: #cfcfcf;
+  --blue-2: #477aaa;
+  --orange: #f5793a;
+  --blue: #85c0f9;
+  --outlineBlue: #2671dc;
+  --flip-background-color: white;
+}
+
+
+
 * {
   color: black;
-  font-family: 'Clear Sans', Helvetica, Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   box-sizing: border-box;
-  /* border: 1px solid pink; */
+  /* border: 2px solid red; */
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -15,49 +43,73 @@ body {
   padding: 0;
   font-size: 16px;
   /* min-width: 500px; */
-  overflow: hidden;
+  /* overflow: hidden; */
+}
+
+#main-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  margin: 0 auto 0 auto;
+  /* justify-content: space-between; */
+  /* justify-content: center; */
+  /* overflow: hidden; */
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 3rem;
   text-align: center;
-  font-family: Merriweather, sans-serif;
-  font-weight: 900;
-  margin-top: 0px;
+  font-family: Oswald, sans-serif;
+  /* font-weight: 900; */
+  /* margin-top: 0px; */
   padding: 20px;
-  border-bottom: 1px solid hsl(214, 8%, 84%);
+  border-bottom: 1px solid var(--lightGray);
 }
 
 .message-box {
   position: absolute;
-  top: .5em;
-  display: inline-block;
+  top: 15px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  /* right: 50%; */
+  display: block;
   width: fit-content;
-  margin: auto;
-  border-radius: 12px;
+
+  border-radius: 6px;
   visibility: hidden;
-  text-align: center;
+  /* text-align: center; */
   padding: 0.8em;
-  background-color: #333333;
+  background-color: var(--black);
   font-weight: normal;
   color: white;
-  margin-top: 0;
+  /* margin-top: 0; */
+  /* transform:translate(-50%, 0);
+  transition:opacity 300ms cubic-bezier(0.645, 0.045, 0.355, 1); */
 }
 
 .game-container {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-content: center;
-  align-items: center;
+  /* justify-content: center; */
+  /* align-content: center; */
+  /* align-items: center; */
   width: 500px;
-  height: 90vh;
-  margin: auto auto 0 auto;
+  height: 100vh;
+  /* flex: 1; */
+  /* margin: auto auto 0 auto; */
+  /* overflow: hidden; */
+  margin: auto;
 }
 
 .guess-rows {
-  margin: auto;
+  /* align-self: center; */
+  /* flex-grow: 1; */
+  margin: auto auto;
+  top: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -65,6 +117,7 @@ h1 {
   height: 420px;
   font-size: 2rem;
   padding: 10px;
+  /* border: 1px solid green; */
 }
 
 .tile-row div {
@@ -78,31 +131,35 @@ h1 {
 }
 
 .tile {
-  display: flex;
+  display: inline-flex;
+  line-height: 1;
   text-transform: uppercase;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: 2px solid hsl(214, 8%, 84%);
+  border: 2px solid var(--lightGray);
   justify-content: center;
   align-items: center;
   user-select: none;
   flex: 1;
+  vertical-align: middle;
 }
 
-.tile.final-yellow {
-  background-color: hsl(49, 51%, 57%);
+
+
+[data-animation="idle"].final-yellow {
+  background-color: var(--yellow);
   color: white;
   border: none;
 }
 
-.guess-rows .final-dark-gray {
-  background-color: hsl(200, 2%, 48%);
+[data-animation="idle"].final-dark-gray {
+  background-color: var(--darkGray);
   color: white;
   border: none;
 }
 
-.guess-rows .final-green {
-  background-color: hsl(115, 29%, 53%);
+[data-animation="idle"].final-green {
+  background-color: var(--green);
   color: white;
   border: none;
 }
@@ -111,7 +168,7 @@ h1 {
 Chain multiple datasets as follows.
 Also see: https://stackoverflow.com/a/12340746/1085805 */
 [data-is-active-row=true] [data-is-blank-tile="false"] {
-  border: 2px solid hsl(200, 2%, 48%);
+  border: 2px solid var(--gray);
 }
 
 /* Important.
@@ -170,41 +227,19 @@ button:last-of-type {
 }
 
 [data-state="incorrect"] {
-  background-color: hsl(200, 2%, 48%);
+  background-color: var(--darkGray);
   color: white;
 }
 
 [data-state="nonpositional"] {
-  background-color: hsl(49, 51%, 57%);
+  background-color: var(--yellow);
   color: white;
 }
 
 [data-state="correct"] {
-  background-color: hsl(115, 29%, 53%);
+  background-color: var(--green);
   color: white;
 }
-
-
-.tile.flip {
-  animation: flip 600ms ease-in-out;
-}
-
-.flip:nth-child(2) {
-  animation-delay: 200ms;
-}
-
-.flip:nth-child(3) {
-  animation-delay: 400ms;
-}
-
-.flip:nth-child(4) {
-  animation-delay: 600ms;
-}
-
-.flip:nth-child(5) {
-  animation-delay: 800ms;
-}
-
 
 .tile.shake {
   animation: shake 600ms ease-in-out;
@@ -213,7 +248,6 @@ button:last-of-type {
 .tile.dance {
   animation: dance 500ms ease-in-out;
 }
-
 
 
 @keyframes shake {
@@ -276,20 +310,65 @@ button:last-of-type {
   }
 }
 
+
+
+.tile.flip {
+  animation: flip 500ms linear;
+}
+
+.flip:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.flip:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+.flip:nth-child(4) {
+  animation-delay: 300ms;
+}
+
+.flip:nth-child(5) {
+  animation-delay: 400ms;
+}
+
+
+
+
+
 @keyframes flip {
   0% {
     transform: rotateX(0);
   }
 
-  45% {
-    transform: rotateX(90deg);
-  }
-
-  55% {
+  50% {
     transform: rotateX(90deg);
   }
 
   100% {
-    transform: rotateX(0);
+    transform: rotateX(0deg);
+    background-color: var(--flip-background-color);
+    border: none;
+    color: white;
+  }
+
+}
+
+
+.tile.grow-and-shrink {
+  animation: grow-and-shrink 150ms linear;
+}
+
+@keyframes grow-and-shrink {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }

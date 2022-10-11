@@ -15451,6 +15451,7 @@ function processMouseClick(e) {
         document.activeElement.blur();
         return;
     } else {
+        growTiles();
         game.pointer.writeContent(e);
         document.activeElement.blur();
         return;
@@ -15469,6 +15470,7 @@ function processPhysicalKeyboardPress(e) {
     }
 
     if (e.key.match(/^[A-Za-z]$/)) {
+        growTiles();
         game.pointer.writeContent(e.key);
         return;
     }
@@ -15489,7 +15491,7 @@ function processMessageBox(message) {
 }
 
 function gameOver() {
-    processMessageBox("Game Over!!")
+    processMessageBox(game.answer)
     stopInteraction();
     silenceKeyboard();
     return;
@@ -15517,31 +15519,36 @@ function processGuess() {
         return;
     }
     else if (game.pointer.row == (game.guessNumber - 1) && game.guess.word != game.answer) {
+        toggleDatasetIsActiveRow();
         colorGuessLetters();
         gameOver();
         return;
     }
     else if (correctGuessAtTurn(0)) {
+        toggleDatasetIsActiveRow();
         correctGuess("That was hell of a guess!")
         return;
     }
     else if (correctGuessAtTurn(1, 3)) {
+        toggleDatasetIsActiveRow();
         correctGuess("Magnificient!")
         return;
     }
     else if (correctGuessAtTurn(4)) {
+        toggleDatasetIsActiveRow();
         correctGuess("Good!")
         return;
     }
     else if (correctGuessAtTurn(5)) {
+        toggleDatasetIsActiveRow();
         correctGuess("Phew!")
         return;
     }
     else {
         toggleDatasetIsActiveRow();
-        animateTiles("flip");
+        // animateTiles("flip");
         colorGuessLetters();
-        // toggleDatasetIsActiveRow();
+        flipTiles();
         game.pointer.gotoNextRow();
         toggleDatasetIsActiveRow();
         return;
@@ -15553,7 +15560,7 @@ function processGuessLetters() {
     var word = game.answer;
     var tempGuess = game.guess.word;
     var colors = Array(n).fill(0);
-    console.log(tempGuess);
+    // console.log(tempGuess);
     for (let i = 0; i < n; i++) {
         if (tempGuess[i] === word[i]) {
             colors[i] = 2;
@@ -15566,7 +15573,7 @@ function processGuessLetters() {
             word = word.replace(tempGuess[i], " ");
         }
     }
-    console.log(colors);
+    // console.log(colors);
     return colors;
 }
 
@@ -15578,16 +15585,19 @@ function colorGuessLetters() {
         var key = document.getElementById(squareValue);
         if (number == 2) {
             square.classList.add("final-green");
+            square.dataset.color = "green"
             key.dataset.state = "correct";
         } else if (number == 1) {
             square.classList.add("final-yellow");
             if (key.dataset.state !== "correct") {
                 key.dataset.state = "nonpositional";
+                square.dataset.color = "yellow"
             }
         } else {
             square.classList.add("final-dark-gray");
             if (key.dataset.state === "neutral") {
                 key.dataset.state = "incorrect";
+                square.dataset.color = "gray"
             }
         }
     });
@@ -15606,6 +15616,45 @@ function animateTiles(style) {
             "animationend",
             () => {
                 tile.classList.remove(style);
+                // tile.dataset.animation =
+            }, {
+            once: true,
+        }
+        );
+    });
+}
+
+
+function growTiles() {
+    const tile = document.getElementById("row-index-" + game.pointer.row + "-column-index-" + game.pointer.column);
+    tile.classList.add("grow-and-shrink");
+    tile.addEventListener(
+        "animationend",
+        () => {
+            tile.classList.remove("grow-and-shrink");
+            // tile.dataset.animation =
+        }, {
+        once: true,
+    }
+    );
+
+}
+
+
+function flipTiles() {
+    const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
+    array.forEach((tile) => {
+
+        // tile.classList.remove("flip-off");
+        tile.classList.add("flip")
+        tile.dataset.animation = "on"
+        tile.style.setProperty('--flip-background-color', tile.dataset.color)
+        tile.addEventListener(
+            "animationend",
+            () => {
+                // tile.classList.add("flip-off");
+                tile.classList.remove("flip");
+                tile.dataset.animation = "idle"
             }, {
             once: true,
         }
@@ -15620,8 +15669,8 @@ function getTileFromCurrentRow(columnNumber) {
 }
 
 function toggleMessageBox() {
-    var tooltip = document.getElementById("message-box");
-    tooltip.style.visibility = "hidden";
+    var messageBox = document.getElementById("message-box");
+    messageBox.style.visibility = "hidden";
     return;
 }
 
@@ -15634,6 +15683,7 @@ function setMessageBoxTimer(duration = 1500) {
 
 //The following builds all the necessary HTML elements.
 function createDomElements() {
+    createMainContainer();
     createHeaderDiv("Word Wizard");
     createGameContainerDiv("game-container");
     createMessageBoxDiv("message-box");
@@ -15643,6 +15693,13 @@ function createDomElements() {
     createOnscreenKeyboard();
 }
 
+function createMainContainer() {
+    const mainContainer = document.createElement("div");
+    mainContainer.setAttribute("id", "main-container");
+    document.body.append(mainContainer);
+    return;
+}
+
 function createHeaderDiv(gameTitle) {
     const headerDiv = document.createElement("div");
     headerDiv.setAttribute("id", "header");
@@ -15650,7 +15707,8 @@ function createHeaderDiv(gameTitle) {
     const header = document.createElement("h1");
     headerText = document.createTextNode(gameTitle);
     header.appendChild(headerText);
-    document.body.append(header);
+    document.getElementById("main-container").append(header);
+    // document.body.append(header);
     return;
 }
 
@@ -15658,7 +15716,8 @@ function createGameContainerDiv(divId) {
     const gameContainer = document.createElement("div");
     gameContainer.setAttribute("id", divId);
     gameContainer.classList.add("game-container");
-    document.body.append(gameContainer);
+    document.getElementById("main-container").append(gameContainer);
+    // document.body.append(gameContainer);
     return;
 }
 
@@ -15709,8 +15768,11 @@ function createTiles() {
                 "row-index-" + rowIndex + "-column-index-" + columnIndex
             );
             rowElement.classList.add("tile");
+            // rowElement.classList.add("flip-off");
             rowElement.textContent = "";
             rowElement.dataset.isBlankTile = "true";
+            rowElement.dataset.animation = "idle";
+            rowElement.dataset.color = "white";
             tileRow.append(rowElement);
         }
     }
