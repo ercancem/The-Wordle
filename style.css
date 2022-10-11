@@ -86,6 +86,10 @@ h1 {
   border-bottom: 1px solid var(--lightGray);
 }
 
+.header {
+  width: 100%;
+}
+
 .message-box {
   position: absolute;
   top: 15px;
@@ -235,7 +239,8 @@ svg {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  margin: auto auto 10px auto;
+  /* margin: auto 6x 10px 6x; */
+  padding: 0 10px 10px 10px;
 }
 
 .keyboard-row {
