@@ -1,3 +1,10 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v8.4.14,
+* Autoprefixer: v10.4.7
+* Browsers: last 4 version
+*/
+
 :root {
   --green: #6aaa64;
   --darkendGreen: #538d4e;
@@ -28,7 +35,8 @@
   color: black;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
-  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   /* border: 2px solid red; */
   margin: 0;
   padding: 0;
@@ -36,8 +44,13 @@
 
 body {
   background-color: white;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -48,8 +61,13 @@ body {
 
 #main-container {
   position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   height: 100vh;
   width: 100%;
   margin: 0 auto 0 auto;
@@ -76,6 +94,8 @@ h1 {
   margin: 0 auto;
   /* right: 50%; */
   display: block;
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
   width: fit-content;
 
   border-radius: 6px;
@@ -92,8 +112,13 @@ h1 {
 
 .game-container {
   position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   /* justify-content: center; */
   /* align-content: center; */
   /* align-items: center; */
@@ -110,9 +135,16 @@ h1 {
   /* flex-grow: 1; */
   margin: auto auto;
   top: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   width: 350px;
   height: 420px;
   font-size: 2rem;
@@ -121,26 +153,41 @@ h1 {
 }
 
 .tile-row div {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
 }
 
 .tile-row {
+  display: -ms-grid;
   display: grid;
+  -ms-grid-columns: 1fr 5px 1fr 5px 1fr 5px 1fr 5px 1fr;
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 5px;
 }
 
 .tile {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
   display: inline-flex;
   line-height: 1;
   text-transform: uppercase;
   width: 100%;
   aspect-ratio: 1 / 1;
   border: 2px solid var(--lightGray);
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  flex: 1;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
   vertical-align: middle;
 }
 
@@ -181,12 +228,19 @@ svg {
 .keyboard {
   height: 200px;
   width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   margin: auto auto 10px auto;
 }
 
 .keyboard-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   margin-bottom: 8px;
 }
@@ -198,18 +252,27 @@ svg {
   padding: 0;
   margin: 0 6px 0 0;
   outline: none;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   text-transform: uppercase;
-  flex: 1;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
 }
 
 .game-icon {
-  flex: 1.5;
+  -webkit-box-flex: 1.5;
+      -ms-flex: 1.5;
+          flex: 1.5;
 }
 
 #enter,
 #delete {
-  flex: 1.5;
+  -webkit-box-flex: 1.5;
+      -ms-flex: 1.5;
+          flex: 1.5;
 }
 
 /*This part is important*/
@@ -219,7 +282,9 @@ button:last-of-type {
 
 .spacer {
   display: block;
-  flex: 0.5;
+  -webkit-box-flex: 0.5;
+      -ms-flex: 0.5;
+          flex: 0.5;
 }
 
 [data-state="neutral"] {
@@ -242,94 +307,215 @@ button:last-of-type {
 }
 
 .tile.shake {
-  animation: shake 600ms ease-in-out;
+  -webkit-animation: shake 600ms ease-in-out;
+          animation: shake 600ms ease-in-out;
 }
 
 .tile.dance {
-  animation: dance 500ms ease-in-out;
+  -webkit-animation: dance 500ms ease-in-out;
+          animation: dance 500ms ease-in-out;
+}
+
+
+@-webkit-keyframes shake {
+  12.5% {
+    -webkit-transform: translateX(-8%);
+            transform: translateX(-8%);
+  }
+
+  25% {
+    -webkit-transform: translateX(8%);
+            transform: translateX(8%);
+  }
+
+  37.5% {
+    -webkit-transform: translateX(-6%);
+            transform: translateX(-6%);
+  }
+
+  50% {
+    -webkit-transform: translateX(6%);
+            transform: translateX(6%);
+  }
+
+  62.5% {
+    -webkit-transform: translateX(-4%);
+            transform: translateX(-4%);
+  }
+
+  75% {
+    -webkit-transform: translateX(-4%);
+            transform: translateX(-4%);
+  }
+
+  87.5% {
+    -webkit-transform: translateX(-2%);
+            transform: translateX(-2%);
+  }
+
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+  }
 }
 
 
 @keyframes shake {
   12.5% {
-    transform: translateX(-8%);
+    -webkit-transform: translateX(-8%);
+            transform: translateX(-8%);
   }
 
   25% {
-    transform: translateX(8%);
+    -webkit-transform: translateX(8%);
+            transform: translateX(8%);
   }
 
   37.5% {
-    transform: translateX(-6%);
+    -webkit-transform: translateX(-6%);
+            transform: translateX(-6%);
   }
 
   50% {
-    transform: translateX(6%);
+    -webkit-transform: translateX(6%);
+            transform: translateX(6%);
   }
 
   62.5% {
-    transform: translateX(-4%);
+    -webkit-transform: translateX(-4%);
+            transform: translateX(-4%);
   }
 
   75% {
-    transform: translateX(-4%);
+    -webkit-transform: translateX(-4%);
+            transform: translateX(-4%);
   }
 
   87.5% {
-    transform: translateX(-2%);
+    -webkit-transform: translateX(-2%);
+            transform: translateX(-2%);
   }
 
   100% {
-    transform: translateX(0);
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+  }
+}
+
+@-webkit-keyframes dance {
+  20% {
+    -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+  }
+
+  40% {
+    -webkit-transform: translateY(5%);
+            transform: translateY(5%);
+  }
+
+  60% {
+    -webkit-transform: translateY(-25%);
+            transform: translateY(-25%);
+  }
+
+  80% {
+    -webkit-transform: translateY(2.5%);
+            transform: translateY(2.5%);
+  }
+
+  90% {
+    -webkit-transform: translateY(-5%);
+            transform: translateY(-5%);
+  }
+
+  100% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
   }
 }
 
 @keyframes dance {
   20% {
-    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
   }
 
   40% {
-    transform: translateY(5%);
+    -webkit-transform: translateY(5%);
+            transform: translateY(5%);
   }
 
   60% {
-    transform: translateY(-25%);
+    -webkit-transform: translateY(-25%);
+            transform: translateY(-25%);
   }
 
   80% {
-    transform: translateY(2.5%);
+    -webkit-transform: translateY(2.5%);
+            transform: translateY(2.5%);
   }
 
   90% {
-    transform: translateY(-5%);
+    -webkit-transform: translateY(-5%);
+            transform: translateY(-5%);
   }
 
   100% {
-    transform: translateY(0);
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
   }
 }
 
 
 
 .tile.flip {
-  animation: flip 500ms linear;
+  -webkit-animation: flip 500ms linear;
+          animation: flip 500ms linear;
 }
 
 .flip:nth-child(2) {
-  animation-delay: 100ms;
+  -webkit-animation-delay: 100ms;
+          animation-delay: 100ms;
 }
 
 .flip:nth-child(3) {
-  animation-delay: 200ms;
+  -webkit-animation-delay: 200ms;
+          animation-delay: 200ms;
 }
 
 .flip:nth-child(4) {
-  animation-delay: 300ms;
+  -webkit-animation-delay: 300ms;
+          animation-delay: 300ms;
 }
 
 .flip:nth-child(5) {
-  animation-delay: 400ms;
+  -webkit-animation-delay: 400ms;
+          animation-delay: 400ms;
+}
+
+
+
+
+
+@-webkit-keyframes flip {
+  0% {
+    -webkit-transform: rotateX(0);
+            transform: rotateX(0);
+  }
+
+  50% {
+    -webkit-transform: rotateX(90deg);
+            transform: rotateX(90deg);
+  }
+
+  100% {
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+    background-color: var(--flip-background-color);
+    border: none;
+    color: white;
+  }
+
 }
 
 
@@ -338,15 +524,18 @@ button:last-of-type {
 
 @keyframes flip {
   0% {
-    transform: rotateX(0);
+    -webkit-transform: rotateX(0);
+            transform: rotateX(0);
   }
 
   50% {
-    transform: rotateX(90deg);
+    -webkit-transform: rotateX(90deg);
+            transform: rotateX(90deg);
   }
 
   100% {
-    transform: rotateX(0deg);
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
     background-color: var(--flip-background-color);
     border: none;
     color: white;
@@ -356,19 +545,40 @@ button:last-of-type {
 
 
 .tile.grow-and-shrink {
-  animation: grow-and-shrink 150ms linear;
+  -webkit-animation: grow-and-shrink 150ms linear;
+          animation: grow-and-shrink 150ms linear;
+}
+
+@-webkit-keyframes grow-and-shrink {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+
+  50% {
+    -webkit-transform: scale(1.2);
+            transform: scale(1.2);
+  }
+
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
 }
 
 @keyframes grow-and-shrink {
   0% {
-    transform: scale(1);
+    -webkit-transform: scale(1);
+            transform: scale(1);
   }
 
   50% {
-    transform: scale(1.2);
+    -webkit-transform: scale(1.2);
+            transform: scale(1.2);
   }
 
   100% {
-    transform: scale(1);
+    -webkit-transform: scale(1);
+            transform: scale(1);
   }
 }
