@@ -51,7 +51,7 @@
     height: calc(var(--vh, 1vh) * 100);
     /* min-height: 100vh; */
     /* height: 100%; */
-    /* overflow: hidden; */
+    overflow: hidden;
   }
 
   #main-container {
