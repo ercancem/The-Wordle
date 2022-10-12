@@ -126,14 +126,14 @@
 
 
   .keyboard {
-    background-color: #2671dc;
+    background-color: #80CBC4;
     height: 220px;
     width: 100%;
     display: flex;
     flex-direction: column;
     margin-top: auto;
     /* margin-bottom: 30px; */
-    padding: 0 8px 8px 20px;
+    padding: 0 8px;
   }
 
   .keyboard-row {
@@ -142,9 +142,9 @@
     align-items: center;
   }
 
-  /* .keyboard-row:first-child {
-    margin-top: 2px;
-  } */
+  .keyboard-row:last-child {
+    margin-bottom: 20px;
+  }
 
   .keyboard-button {
     color: var(--black);
