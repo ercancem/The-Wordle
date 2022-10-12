@@ -15687,7 +15687,8 @@ function createDomElements() {
     createHeaderDiv("Word Wizard");
     createGameContainerDiv("game-container");
     createMessageBoxDiv("message-box");
-    createTilesContainerDiv("guess-rows");
+    createBoardWrapperDiv("board-wrapper");
+    createBoardContainerDiv("board");
     createOnscreenKeyboardDiv("onscreen-keyboard");
     createTiles();
     createOnscreenKeyboard();
@@ -15707,7 +15708,8 @@ function createHeaderDiv(gameTitle) {
     const header = document.createElement("h1");
     headerText = document.createTextNode(gameTitle);
     header.appendChild(headerText);
-    document.getElementById("main-container").append(header);
+    headerDiv.appendChild(header);
+    document.getElementById("main-container").append(headerDiv);
     // document.body.append(header);
     return;
 }
@@ -15732,12 +15734,21 @@ function createMessageBoxDiv(divId) {
     return;
 }
 
-function createTilesContainerDiv(divId) {
+function createBoardWrapperDiv(divId) {
     const gameContainer = document.getElementById("game-container");
-    const guessRows = document.createElement("div");
-    guessRows.setAttribute("id", divId);
-    guessRows.classList.add("guess-rows");
-    gameContainer.append(guessRows);
+    const boardWrapper = document.createElement("div");
+    boardWrapper.setAttribute("id", divId);
+    boardWrapper.classList.add("board-wrapper");
+    gameContainer.append(boardWrapper);
+    return;
+}
+
+function createBoardContainerDiv(divId) {
+    const boardWrapper = document.getElementById("board-wrapper");
+    const board = document.createElement("div");
+    board.setAttribute("id", divId);
+    board.classList.add("board");
+    boardWrapper.append(board);
     return;
 }
 
@@ -15751,7 +15762,7 @@ function createOnscreenKeyboardDiv(divId) {
 }
 
 function createTiles() {
-    const tiles = document.getElementById("guess-rows");
+    const tiles = document.getElementById("board");
 
     for (let rowIndex = 0; rowIndex < GUESS_NUMBER; rowIndex++) {
         const tileRow = document.createElement("div");
