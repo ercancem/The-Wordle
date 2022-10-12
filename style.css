@@ -39,6 +39,7 @@
   }
 
   body {
+    position: fixed;
     min-height: -webkit-fill-available;
     background-color: var(--black);
     -webkit-font-smoothing: antialiased;
