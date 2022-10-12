@@ -19,6 +19,7 @@
     --yellow: #FFCB6B;
     --lightGray: #C3CEE3;
     --darkGray: #747474;
+    --black: #363636;
   }
 
 
@@ -26,7 +27,7 @@
   *,
   *::before,
   *::after {
-    color: black;
+    color: white;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     box-sizing: inherit;
@@ -36,7 +37,7 @@
   }
 
   body {
-    background-color: white;
+    background-color: var(--black);
     -webkit-font-smoothing: antialiased;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
@@ -126,7 +127,7 @@
 
   .keyboard-row {
     display: flex;
-    /* margin-bottom: 8px; */
+    margin-bottom: 8px;
     align-items: center;
   }
 
@@ -135,6 +136,7 @@
   } */
 
   .keyboard-button {
+    color: var(--black);
     text-transform: uppercase;
     height: 58px;
     flex: 1;
