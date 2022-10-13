@@ -15397,6 +15397,13 @@ class Guess {
     }
 }
 
+class KeyboardSwitch {
+    constructor(game) {
+        this.keyboard = game;
+        this.switch = new AbortController();
+    }
+}
+
 class Game {
     constructor(letterNumber = 5, guessNumber = 6) {
         this.letterNumber = letterNumber;
@@ -15405,6 +15412,7 @@ class Game {
         this.pointer = new Pointer(this);
         this.guess = new Guess(this);
         this.keyboard = document.getElementById("onscreen-keyboard");
+        this.keyboardSwitch = new KeyboardSwitch(this);
     }
 
     startInteraction() {
@@ -15414,6 +15422,8 @@ class Game {
 
     stopInteraction() {
         document.removeEventListener("keydown", processPhysicalKeyboardPress);
+        // document.getElementsByClassName("keyboard-button")
+        // this.keyboardSwitch.abort();
         return;
     }
 
@@ -15426,12 +15436,16 @@ class Game {
                     let key = event.target.dataset.key;
                     processMouseClick(key);
                 }
-            }
+            },
+            {
+                signal: onscreenKeyboardSwitch.signal,
+              }
         );
     }
 }
 
 const game = new Game();
+const onscreenKeyboardSwitch = new AbortController();
 game.activateKeyboard();
 game.startInteraction();
 
@@ -15497,7 +15511,8 @@ function processMessageBox(message) {
 
 function gameOver() {
     processMessageBox(game.answer)
-    stopInteraction();
+    game.stopInteraction();
+    // game.keyboardSwitch.abort();
     silenceKeyboard();
     return;
 }
@@ -15507,6 +15522,7 @@ function correctGuess(message) {
     processMessageBox(message);
     animateTiles("dance");
     game.stopInteraction();
+    silenceKeyboard();
     return;
 }
 
