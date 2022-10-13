@@ -15486,6 +15486,11 @@ function invalidSubmission(message) {
 function processMessageBox(message) {
     var messageBox = document.getElementById("message-box");
     messageBox.textContent = message;
+    // const par = document.createElement("p");
+    // toastText = document.createTextNode(message);
+    // par.append(toastText);
+    // messageBox.appendChild(par);
+    // messageBox.firstChild.textContent = message;
     messageBox.style.visibility = "visible";
     return;
 }
@@ -15728,8 +15733,11 @@ function createMessageBoxDiv(divId) {
     const messageBoxContainer = document.createElement("div");
     messageBoxContainer.setAttribute("id", divId);
     messageBoxContainer.classList.add("message-box");
-    dummyText = document.createTextNode("");
-    messageBoxContainer.appendChild(dummyText);
+    // const par = document.createElement("p");
+    // dummyText = document.createTextNode("I am a toast!");
+    // par.appendChild(dummyText);
+    // messageBoxContainer.append(dummyText);
+    messageBoxContainer.textContent = ("I am a toast!")
     gameContainer.append(messageBoxContainer);
     return;
 }
