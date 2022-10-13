@@ -72,6 +72,22 @@
     border-bottom: 1px solid var(--lightGray);
   }
 
+  .message-box {
+    background-color: var(--lightGray);
+    position: fixed;
+    top: 50px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 0.8em;
+    border-radius: 6px;
+    opacity: 0.95;
+    color: var(--black);
+    font-weight: normal;
+    visibility: hidden;
+  }
+
   .game-container {
     /* background-color: #6aaa64; */
     height: 100%;
@@ -103,8 +119,8 @@
   .tile-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-gap: 5px;
-    margin-bottom: 5px;
+    grid-gap: 10px;
+    margin-bottom: 10px;
   }
 
   .tile-row:last-child {
@@ -126,14 +142,14 @@
 
 
   .keyboard {
-    background-color: lightskyblue;
+    /* background-color: lightskyblue; */
     height: 240px;
     width: 100%;
     display: flex;
     flex-direction: column;
     margin-top: auto;
     /* margin-bottom: 30px; */
-    padding: 0 8px 20px 0;
+    padding: 0 8px 20px 8px;
     /* margin-bottom: 20px; */
   }
 
