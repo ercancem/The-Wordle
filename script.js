@@ -15667,9 +15667,9 @@ function flipTiles() {
     array.forEach((tile) => {
 
         // tile.classList.remove("flip-off");
-        tile.classList.add("flip")
-        tile.dataset.animation = "on"
-        tile.style.setProperty('--flipColor', tile.dataset.color)
+        tile.classList.add("flip");
+        tile.dataset.animation = "on";
+        tile.style.setProperty('--flipColor', "--" + tile.dataset.color);
         tile.addEventListener(
             "animationend",
             () => {
