@@ -15669,7 +15669,7 @@ function flipTiles() {
         // tile.classList.remove("flip-off");
         tile.classList.add("flip")
         tile.dataset.animation = "on"
-        tile.style.setProperty('--flip-background-color', tile.dataset.color)
+        tile.style.setProperty('--flipColor', tile.dataset.color)
         tile.addEventListener(
             "animationend",
             () => {

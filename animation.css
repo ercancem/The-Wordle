@@ -195,7 +195,7 @@
 
 
 
-  @-webkit-keyframes flip {
+  /* @-webkit-keyframes flip {
     0% {
       -webkit-transform: rotateX(0);
       transform: rotateX(0);
@@ -214,7 +214,7 @@
       color: white;
     }
 
-  }
+  } */
 
 
 
@@ -226,16 +226,24 @@
       transform: rotateX(0);
     }
 
+    49% {
+      -webkit-transform: rotateX(90deg);
+      transform: rotateX(89deg);
+      background-color: var(--black);
+    }
+
     50% {
       -webkit-transform: rotateX(90deg);
       transform: rotateX(90deg);
+      background-color: var(--flipColor);
+      border: none;
     }
 
     100% {
       -webkit-transform: rotateX(0deg);
       transform: rotateX(0deg);
-      background-color: var(--flip-background-color);
-      border: none;
+      /* background-color: var(--flipColor); */
+      /* border: none; */
       color: white;
     }
 
