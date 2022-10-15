@@ -12,6 +12,7 @@
     --darkGray: #747474;
     --black: #363636;
     --flipColor: white;
+    --red: #CB8087;
   }
 
   *,
@@ -63,9 +64,9 @@
     width: fit-content;
     padding: 0.8em;
     border-radius: 6px;
-    opacity: 0.95;
+    /* opacity: 0.95; */
     color: var(--black);
-    font-weight: normal;
+    /* font-weight: normal; */
     visibility: hidden;
   }
 
