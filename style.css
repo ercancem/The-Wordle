@@ -46,15 +46,15 @@
   }
 
   h1 {
-    color: var(--lightGray);
+    color: white;
     font-size: 1.5rem;
     font-family: Oswald, sans-serif;
     padding: 6px 6px 6px 20px;
-    border-bottom: 1px solid var(--lightGray);
+    border-bottom: 1px solid var(--darkGray);
   }
 
   .message-box {
-    background-color: var(--green);
+    background-color: white;
     font-weight: bold;
     position: fixed;
     top: 50px;
@@ -115,12 +115,12 @@
     display: inline-flex;
     font-size: 2rem;
     line-height: 1;
-    color: var(--lightGray);
+    color: white;
     text-transform: uppercase;
     text-align: center;
     width: 100%;
     aspect-ratio: 1 / 1;
-    border: 2px solid var(--lightGray);
+    border: 2px solid var(--darkGray);
     justify-content: center;
     align-items: center;
     vertical-align: middle;
