@@ -369,7 +369,7 @@
     margin-top: 2px;
   } */
 
-  .keyboard-button {
+  /* .keyboard-button {
     text-transform: uppercase;
     height: 58px;
     flex: 1;
@@ -378,7 +378,23 @@
     border: none;
     outline: none;
     user-select: none;
+  } */
+
+
+  .keyboard-button {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--black);
+    text-transform: uppercase;
+    border: none;
+    border-radius: 4px;
+    outline: none;
+    user-select: none;
+    height: 58px;
+    flex: 1;
+    margin: 0 2px;
   }
+
 
   .keyboard-button:last-child {
     margin: 0;

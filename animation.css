@@ -1,5 +1,98 @@
 @media all {
 
+  #modal {
+    /* opacity: 0; */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background-color: white;
+    margin-top: 50px;
+    /* margin:0 auto; */
+  }
+
+  #modal .show {
+    opacity: 1;
+  }
+
+  #modal .hide {
+    opacity: 0;
+  }
+
+  #modal button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+
+  #modal h1 {
+    color: var(--black);
+    
+  }
+
+  ul {
+    padding: 40px;
+    margin: 0;
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+    list-style-type: none;
+  }
+
+  #modal li:nth-child(4) {
+    background-color: var(--green);
+    color: black;
+    border: none;
+  }
+
+  #modal li:nth-child(5) {
+    background-color: var(--yellow);
+    color: black;
+    border: none;
+  }
+
+  #modal li:nth-child(6) {
+    background-color: var(--darkGray);
+    color: white;
+    border: none;
+  }
+  
+  /* ul::before {
+    content: '';
+    width: 0.5rem;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 8%;
+  } */
+  
+  li {
+    font-weight: normal;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--darkGray);
+    /* background: var(--lightGray); */
+  }
+  
+  li + li {
+    margin-top: 10px;
+  }
+
+  
+  
+  /* ::marker {
+    font-weight: 600;
+    color: var(--lightGray);
+    font-size: 1.8rem;
+  } */
+  
+
+
+
+
+
+
   .tile.shake {
     -webkit-animation: shake 600ms ease-in-out;
     animation: shake 600ms ease-in-out;

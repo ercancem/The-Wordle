@@ -15706,6 +15706,7 @@ function setMessageBoxTimer(duration = 1500) {
 function createDomElements() {
     createMainContainer();
     createHeaderDiv("Word Wizard");
+    createModal();
     createGameContainerDiv("game-container");
     createMessageBoxDiv("message-box");
     createBoardWrapperDiv("board-wrapper");
@@ -15714,6 +15715,59 @@ function createDomElements() {
     createTiles();
     createOnscreenKeyboard();
 }
+
+function createModal() {
+    const modal = document.createElement("div");
+    modal.setAttribute("id", "modal");
+    modal.classList.add("show");
+    document.getElementById("main-container").append(modal);
+    // document.body.append(modal);
+
+    const header = document.createElement("h1");
+    modal.append(header);
+    header.textContent = "How To Play";
+
+    const button = document.createElement("button");
+    button.setAttribute("id", "modalButton");
+    modal.append(button);
+    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>';
+
+    button.addEventListener("click", () => {
+        modal.classList.add("hide");
+        modal.classList.remove("show");
+        modal.remove();
+    })
+    
+    const ulist = document.createElement("ul");
+    modal.append(ulist);
+
+    const li1 = document.createElement("li");
+    ulist.append(li1);
+    li1.textContent = "Guess the WORD in 6 tries."
+
+    const li2 = document.createElement("li");
+    ulist.append(li2);
+    li2.textContent = "Each guess must be a valid 5-letter word."
+
+    const li3 = document.createElement("li");
+    ulist.append(li3);
+    li3.textContent = "The color of the tiles will change to show how close your guess was to the word."
+
+    const li4 = document.createElement("li");
+    ulist.append(li4);
+    li4.textContent = "A green tile means the letter is in the word and in the correct spot.";
+
+    const li5 = document.createElement("li");
+    ulist.append(li5);
+    li5.textContent = "A yellow tile means the letter is in the word but in the wrong spot."
+
+    const li6 = document.createElement("li");
+    ulist.append(li6);
+    li6.textContent = "A gray tile means the letter is not in the word in any spot."
+}
+
+
+
 
 function createMainContainer() {
     const mainContainer = document.createElement("div");
