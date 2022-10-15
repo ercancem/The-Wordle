@@ -68,6 +68,7 @@
     color: var(--black);
     /* font-weight: normal; */
     visibility: hidden;
+    z-index: 10;
   }
 
   .game-container {
