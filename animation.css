@@ -163,7 +163,7 @@
 
 
   .tile.flip {
-    animation: flip 500ms linear;
+    animation: flip 700ms linear;
   }
 
   .flip:nth-child(2) {
