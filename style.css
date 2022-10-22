@@ -13,6 +13,8 @@
     --black: #363636;
     --flipColor: white;
     --red: #CB8087;
+    --purple: #8087CB;
+    --lightPurple: #DFE1F2;
   }
 
   *,
@@ -187,10 +189,18 @@
     /* margin: auto; */
   }
 
-  .spacer {
+  #enter,
+  #delete,
+  #ai {
+    background-color: var(--purple);
+    color: var(--lightPurple);
+    fill: var(--lightPurple);
+  }
+
+  /* .spacer {
     display: block;
     flex: 0.5;
-  }
+  } */
 
   [data-animation="idle"].final-yellow {
     background-color: var(--yellow);

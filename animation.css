@@ -1,7 +1,98 @@
 @media all {
 
-  #modal {
-    /* opacity: 0; */
+  #modal-overlay {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    backdrop-filter: blur(2px);
+  }
+
+  #modal-content {
+    position: relative;
+    /* position: absolute; */
+    top: 0;
+    /* left: 0;
+    left: 50%; */
+    margin: 0 auto;
+    /* transform: translateX(-50%); */
+    width: 90%;
+    max-width: 500px;
+    height: 80%;
+    background-color: white;
+    /* margin-top: 50px; */
+    /* margin:0 auto; */
+    box-shadow: 0px 8px 24px 0px rgba(66, 68, 90, 1);
+    border-radius: 6px;
+  }
+
+  .modal-show {
+    opacity: 1;
+  }
+
+  .modal-hide {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #modal-button {
+    position: absolute;
+    display: inline-block;
+    background-color: var(--lightGray);
+    right: 10px;
+    top: 10px;
+    width: fit-content;
+    /* height: 20px; */
+  }
+
+  #modal-header {
+    color: var(--black);
+    font-family: Oswald;
+    width: 100%
+  }
+
+  #modal-ul {
+    padding: 20px;
+    list-style: none;
+  }
+
+  #modal-ul li {
+    font-weight: normal;
+    font-family: 'Comic Neue', cursive;
+    font-size: 1.1rem;
+    padding: 6px;
+    border-radius: 8px;
+    /* border: 1px solid var(--darkGray); */
+  }
+
+  #example-div-container {
+    width: 100%;
+    padding: 8px 0;
+  }
+
+  .example-tile {
+    display: inline;
+    padding: 6px;
+    border: 1px solid black;
+    aspect-ratio: 1 / 1;
+    /* width: 100%; */
+    margin-left: 4px;
+    background-color: var(--darkGray);
+    color: white;
+    font-weight: bold;
+  }
+
+  .example-tile:nth-child(1) {
+    background-color: var(--green);
+  }
+
+  .example-tile:nth-child(4) {
+    background-color: var(--yellow);
+  }
+
+  /* #modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -9,7 +100,6 @@
     height: 80%;
     background-color: white;
     margin-top: 50px;
-    /* margin:0 auto; */
   }
 
   #modal .show {
@@ -58,34 +148,19 @@
     border: none;
   }
   
-  /* ul::before {
-    content: '';
-    width: 0.5rem;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 8%;
-  } */
-  
+
   li {
     font-weight: normal;
     padding: 10px;
     border-radius: 8px;
     border: 1px solid var(--darkGray);
-    /* background: var(--lightGray); */
   }
   
   li + li {
     margin-top: 10px;
-  }
+  } */
 
   
-  
-  /* ::marker {
-    font-weight: 600;
-    color: var(--lightGray);
-    font-size: 1.8rem;
-  } */
   
 
 

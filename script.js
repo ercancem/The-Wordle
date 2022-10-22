@@ -15290,8 +15290,67 @@ const DICT = [
     "shave",
 ]
 
-const LETTER_NUMBER = 5;
-const GUESS_NUMBER = 6;
+Array.prototype.random = function () {
+    return this[Math.floor(Math.random() * this.length)];
+}
+
+
+// https://stackoverflow.com/a/14853974/1085805
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+    // if the argument is the same array, we can be sure the contents are same as well
+    if (array === this)
+        return true;
+    // compare lengths - can save a lot of time 
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l = this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;
+        }
+        else if (this[i] != array[i]) {
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+function eliminateWords() {
+    if (game.history.size === 0) {
+        return;
+    }
+    const t = game.turn;
+    const guess = game.history.get(t)[0];
+    const feedback = game.history.get(t)[1];
+    const words = game.remaining_words
+    const rm = new Array();
+    for (let word of words) {
+        if (evaluateGuess(guess, word).equals(feedback)) {
+            rm.push(word);
+        }
+    }
+    return rm;
+
+}
+
+function suggestWord() {
+    if (game.turn === 1) {
+        return game.initSuggestList.random();
+    }
+    else {
+        return game.remaining_words.random();
+    }
+
+}
 
 createDomElements()
 
@@ -15303,7 +15362,7 @@ class Pointer {
     }
 
     gotoNextTile() {
-        if (this.column < LETTER_NUMBER - 1) {
+        if (this.column < 5 - 1) {
             this.column++;
         }
         return;
@@ -15319,7 +15378,7 @@ class Pointer {
     }
 
     gotoNextRow() {
-        if (this.row < GUESS_NUMBER - 1) {
+        if (this.row < 6 - 1) {
             this.column = 0;
             this.row++;
             game.guess.resetWord();
@@ -15361,7 +15420,7 @@ class Pointer {
             return;
         } else {
             this.getHtmlElement().textContent = data;
-            this.getHtmlElement().dataset.isBlankTile=false;
+            this.getHtmlElement().dataset.isBlankTile = false;
             this.gotoNextTile();
             game.guess.updateWord();
             return;
@@ -15370,7 +15429,7 @@ class Pointer {
 
     deleteContent() {
         this.getHtmlElement().textContent = "";
-        this.getHtmlElement().dataset.isBlankTile=true;
+        this.getHtmlElement().dataset.isBlankTile = true;
     }
 
 }
@@ -15412,48 +15471,62 @@ class Game {
         this.pointer = new Pointer(this);
         this.guess = new Guess(this);
         this.keyboard = document.getElementById("onscreen-keyboard");
-        this.keyboardSwitch = new KeyboardSwitch(this);
+        this.onscreenKeyboardSwitch = new AbortController();
+        this.initSuggestList = ["slice", "tried", "crane", "leant", "close", "trice", "train", "slane", "lance", "trace", "salet", "soare", "arose", "arise", "raise", "aisle", "store", "roate"];
+        this.history = new Map();
+        this.remaining_words = WORDS;
+        this.turn = this.history.size + 1;
     }
 
-    startInteraction() {
+    activateKeyboard() {
         document.addEventListener("keydown", processPhysicalKeyboardPress);
         return;
     }
 
-    stopInteraction() {
+    deactivateKeyboard() {
         document.removeEventListener("keydown", processPhysicalKeyboardPress);
-        // document.getElementsByClassName("keyboard-button")
-        // this.keyboardSwitch.abort();
         return;
     }
 
-    activateKeyboard() {
+    activateOnscreenKeyboard() {
         this.keyboard.addEventListener(
             "click",
             (event) => {
                 if (event.target.className === "keyboard-button") {
-                    // let key = event.target.textContent;
                     let key = event.target.dataset.key;
                     processMouseClick(key);
                 }
             },
             {
-                signal: onscreenKeyboardSwitch.signal,
-              }
+                signal: this.onscreenKeyboardSwitch.signal,
+            }
         );
+    }
+
+    deactivateOnscreenKeyboard() {
+        this.onscreenKeyboardSwitch.abort();
+    }
+
+    gameOver() {
+        processMessageBox(this.answer)
+        this.deactivateKeyboard();
+        this.deactivateOnscreenKeyboard();
+    }
+
+    updateTurn() {
+        this.turn++;
+    }
+
+    updateRemainingWords() {
+        this.remaining_words = eliminateWords();
     }
 }
 
 const game = new Game();
 const onscreenKeyboardSwitch = new AbortController();
+game.activateOnscreenKeyboard();
 game.activateKeyboard();
-game.startInteraction();
 
-
-function silenceKeyboard() {
-    onscreenKeyboardSwitch.abort();
-    return;
-}
 
 function processMouseClick(e) {
     if (e === "delete") {
@@ -15461,10 +15534,16 @@ function processMouseClick(e) {
         document.activeElement.blur(); //important
         return;
     } else if (e === "enter") {
-        processGuess();
+        handleInput();
         document.activeElement.blur();
         return;
-    } else {
+    } else if (e === "ai") {
+        const suggestion = suggestWord();
+        document.activeElement.blur();
+        processMessageBox("Try: " + suggestion);
+        setMessageBoxTimer();
+    }
+    else {
         growTiles();
         game.pointer.writeContent(e);
         document.activeElement.blur();
@@ -15474,7 +15553,7 @@ function processMouseClick(e) {
 
 function processPhysicalKeyboardPress(e) {
     if (e.key === "Enter") {
-        processGuess();
+        handleInput();
         return;
     }
 
@@ -15493,44 +15572,30 @@ function processPhysicalKeyboardPress(e) {
 function invalidSubmission(message) {
     processMessageBox(message);
     setMessageBoxTimer();
-    animateTiles("shake");
+    shakeTiles();
     return;
 }
 
 function processMessageBox(message) {
     var messageBox = document.getElementById("message-box");
     messageBox.textContent = message;
-    // const par = document.createElement("p");
-    // toastText = document.createTextNode(message);
-    // par.append(toastText);
-    // messageBox.appendChild(par);
-    // messageBox.firstChild.textContent = message;
     messageBox.style.visibility = "visible";
-    return;
-}
-
-function gameOver() {
-    processMessageBox(game.answer)
-    game.stopInteraction();
-    // game.keyboardSwitch.abort();
-    silenceKeyboard();
     return;
 }
 
 function correctGuess(message) {
     colorGuessLetters();
     processMessageBox(message);
-    animateTiles("dance");
-    game.stopInteraction();
-    silenceKeyboard();
-    return;
+    shakeTiles("dance");
+    game.deactivateKeyboard();
+    game.deactivateOnscreenKeyboard();
 }
 
 function correctGuessAtTurn(lowerRowNumber, higherRowNumber = lowerRowNumber) {
     return (game.guess.word === game.answer && game.pointer.row >= lowerRowNumber && game.pointer.row <= higherRowNumber)
 }
 
-function processGuess() {
+function handleInput() {
     if (game.pointer.isEmpty()) {
         invalidSubmission("Not enough letters!")
         return;
@@ -15542,7 +15607,7 @@ function processGuess() {
     else if (game.pointer.row == (game.guessNumber - 1) && game.guess.word != game.answer) {
         toggleDatasetIsActiveRow();
         colorGuessLetters();
-        gameOver();
+        game.gameOver();
         return;
     }
     else if (correctGuessAtTurn(0)) {
@@ -15566,8 +15631,12 @@ function processGuess() {
         return;
     }
     else {
+        // user made a valid guess
+        const feedback = evaluateGuess();
         toggleDatasetIsActiveRow();
-        // animateTiles("flip");
+        game.history.set(game.turn, [game.guess.word, feedback.join("")]);
+        game.updateRemainingWords();
+        game.updateTurn();
         colorGuessLetters();
         flipTiles();
         game.pointer.gotoNextRow();
@@ -15576,30 +15645,26 @@ function processGuess() {
     }
 }
 
-function processGuessLetters() {
-    const n = game.answer.length;
-    var word = game.answer;
-    var tempGuess = game.guess.word;
-    var colors = Array(n).fill(0);
-    // console.log(tempGuess);
+function evaluateGuess(guess = game.guess.word, secret = game.answer) {
+    n = secret.length;
+    let colors = Array(n).fill(0);
     for (let i = 0; i < n; i++) {
-        if (tempGuess[i] === word[i]) {
+        if (guess[i] === secret[i]) {
             colors[i] = 2;
-            word = word.replace(tempGuess[i], " ");
+            secret = secret.replace(guess[i], " ");
         }
     }
     for (let i = 0; i < n; i++) {
-        if (colors[i] !== 2 && word.includes(tempGuess[i])) {
+        if (colors[i] !== 2 && secret.includes(guess[i])) {
             colors[i] = 1;
-            word = word.replace(tempGuess[i], " ");
+            secret = secret.replace(guess[i], " ");
         }
     }
-    // console.log(colors);
     return colors;
 }
 
 function colorGuessLetters() {
-    const processedLetters = processGuessLetters();
+    const processedLetters = evaluateGuess();
     processedLetters.forEach((number, index) => {
         var square = getTileFromCurrentRow(index);
         var squareValue = square.textContent.toLowerCase();
@@ -15625,18 +15690,16 @@ function colorGuessLetters() {
     return;
 }
 
-/**
- * @param {string} style
- */
 
-function animateTiles(style) {
+
+function shakeTiles() {
     const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
     array.forEach((tile) => {
-        tile.classList.add(style);
+        tile.classList.add("shake");
         tile.addEventListener(
             "animationend",
             () => {
-                tile.classList.remove(style);
+                tile.classList.remove("shake");
                 // tile.dataset.animation =
             }, {
             once: true,
@@ -15659,7 +15722,7 @@ function growTiles() {
     }
     );
 
-}
+} createModal
 
 
 function flipTiles() {
@@ -15704,9 +15767,9 @@ function setMessageBoxTimer(duration = 1500) {
 
 //The following builds all the necessary HTML elements.
 function createDomElements() {
+    createModal();
     createMainContainer();
     createHeaderDiv("Word Wizard");
-    createModal();
     createGameContainerDiv("game-container");
     createMessageBoxDiv("message-box");
     createBoardWrapperDiv("board-wrapper");
@@ -15716,30 +15779,38 @@ function createDomElements() {
     createOnscreenKeyboard();
 }
 
+
 function createModal() {
-    const modal = document.createElement("div");
-    modal.setAttribute("id", "modal");
-    modal.classList.add("show");
-    document.getElementById("main-container").append(modal);
+    const modalOverlay = document.createElement("div");
+    modalOverlay.setAttribute("id", "modal-overlay");
+    modalOverlay.classList.add("modal-show");
+    document.body.append(modalOverlay);
+    const modalContent = document.createElement("div");
+    modalContent.setAttribute("id", "modal-content");
+    modalContent.classList.add("modal-show");
+    modalOverlay.append(modalContent);
     // document.body.append(modal);
 
     const header = document.createElement("h1");
-    modal.append(header);
+    header.setAttribute("id", "modal-header");
+    modalContent.append(header);
     header.textContent = "How To Play";
 
     const button = document.createElement("button");
-    button.setAttribute("id", "modalButton");
-    modal.append(button);
+    button.setAttribute("id", "modal-button");
+    modalContent.append(button);
     button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>';
 
     button.addEventListener("click", () => {
-        modal.classList.add("hide");
-        modal.classList.remove("show");
-        modal.remove();
+        modalContent.classList.add("modal-hide");
+        modalContent.classList.remove("modal-show");
+        modalOverlay.classList.add("modal-hide");
+        modalOverlay.classList.remove("modal-show");
     })
-    
+
     const ulist = document.createElement("ul");
-    modal.append(ulist);
+    ulist.setAttribute("id", "modal-ul");
+    modalContent.append(ulist);
 
     const li1 = document.createElement("li");
     ulist.append(li1);
@@ -15755,25 +15826,31 @@ function createModal() {
 
     const li4 = document.createElement("li");
     ulist.append(li4);
-    li4.textContent = "A green tile means the letter is in the word and in the correct spot.";
+    li4.textContent = "A green tile means the letter is in the word and in the correct spot. A yellow tile means the letter is in the word but in the wrong spot. A gray tile means the letter is not in the word in any spot.";
 
     const li5 = document.createElement("li");
     ulist.append(li5);
-    li5.textContent = "A yellow tile means the letter is in the word but in the wrong spot."
+    const exampleDivContainer = document.createElement("div");
+    exampleDivContainer.setAttribute("id", "example-div-container")
+    li5.append(exampleDivContainer);
+    const exampleWord = new Set(["A", "R", "I", "S", "E"]);
+    exampleWord.forEach((letter) => {
+        let exampleTile = document.createElement("div");
+        exampleTile.classList.add("example-tile");
+        exampleTile.textContent = letter;
+        exampleDivContainer.append(exampleTile)
+    });
 
     const li6 = document.createElement("li");
     ulist.append(li6);
-    li6.textContent = "A gray tile means the letter is not in the word in any spot."
+    li6.textContent = "Click the BACKSPACE button to change your letter or letters; click the ENTER button to submit your guess. When you feel stuck, click the button with the light bulb, an AI asistant will recommend a suitable guess."
+
 }
-
-
-
 
 function createMainContainer() {
     const mainContainer = document.createElement("div");
     mainContainer.setAttribute("id", "main-container");
     document.body.append(mainContainer);
-    return;
 }
 
 function createHeaderDiv(gameTitle) {
@@ -15785,8 +15862,6 @@ function createHeaderDiv(gameTitle) {
     header.appendChild(headerText);
     headerDiv.appendChild(header);
     document.getElementById("main-container").append(headerDiv);
-    // document.body.append(header);
-    return;
 }
 
 function createGameContainerDiv(divId) {
@@ -15794,8 +15869,6 @@ function createGameContainerDiv(divId) {
     gameContainer.setAttribute("id", divId);
     gameContainer.classList.add("game-container");
     document.getElementById("main-container").append(gameContainer);
-    // document.body.append(gameContainer);
-    return;
 }
 
 function createMessageBoxDiv(divId) {
@@ -15803,13 +15876,8 @@ function createMessageBoxDiv(divId) {
     const messageBoxContainer = document.createElement("div");
     messageBoxContainer.setAttribute("id", divId);
     messageBoxContainer.classList.add("message-box");
-    // const par = document.createElement("p");
-    // dummyText = document.createTextNode("I am a toast!");
-    // par.appendChild(dummyText);
-    // messageBoxContainer.append(dummyText);
     messageBoxContainer.textContent = ("I am a toast!")
     gameContainer.append(messageBoxContainer);
-    return;
 }
 
 function createBoardWrapperDiv(divId) {
@@ -15818,7 +15886,6 @@ function createBoardWrapperDiv(divId) {
     boardWrapper.setAttribute("id", divId);
     boardWrapper.classList.add("board-wrapper");
     gameContainer.append(boardWrapper);
-    return;
 }
 
 function createBoardContainerDiv(divId) {
@@ -15827,7 +15894,6 @@ function createBoardContainerDiv(divId) {
     board.setAttribute("id", divId);
     board.classList.add("board");
     boardWrapper.append(board);
-    return;
 }
 
 function createOnscreenKeyboardDiv(divId) {
@@ -15836,20 +15902,19 @@ function createOnscreenKeyboardDiv(divId) {
     onscreenKeyboard.setAttribute("id", divId);
     onscreenKeyboard.classList.add("keyboard");
     gameContainer.append(onscreenKeyboard);
-    return;
 }
 
 function createTiles() {
     const tiles = document.getElementById("board");
 
-    for (let rowIndex = 0; rowIndex < GUESS_NUMBER; rowIndex++) {
+    for (let rowIndex = 0; rowIndex < 6; rowIndex++) {
         const tileRow = document.createElement("div");
         tileRow.setAttribute("id", "row-index-" + rowIndex);
         tileRow.dataset.isActiveRow = "false";
         tileRow.classList.add("tile-row");
         tiles.append(tileRow);
         for (
-            let columnIndex = 0; columnIndex < LETTER_NUMBER; columnIndex++
+            let columnIndex = 0; columnIndex < 5; columnIndex++
         ) {
             rowElement = document.createElement("div");
             rowElement.setAttribute(
@@ -15865,8 +15930,7 @@ function createTiles() {
             tileRow.append(rowElement);
         }
     }
-        document.getElementById("row-index-0").dataset.isActiveRow = "true";
-    return;
+    document.getElementById("row-index-0").dataset.isActiveRow = "true";
 }
 
 function toggleDatasetIsActiveRow() {
@@ -15877,7 +15941,6 @@ function toggleDatasetIsActiveRow() {
     else {
         row.dataset.isActiveRow = "true";
     }
-    return;
 }
 
 
@@ -15887,7 +15950,7 @@ function createOnscreenKeyboard() {
     // const set1 = new Set(["j", "k", "l", "m", "n", "o", "p", "q", "r",]);
     // const set2 = new Set(["enter", "s", "t", "u", "v", "w", "x", "y", "z","delete",]);
     const set0 = new Set(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p",]);
-    const set1 = new Set(["a", "s", "d", "f", "g", "h", "j", "k", "l",]);
+    const set1 = new Set(["ai", "a", "s", "d", "f", "g", "h", "j", "k", "l",]);
     const set2 = new Set(["enter", "z", "x", "c", "v", "b", "n", "m", "delete"]);
 
 
@@ -15918,56 +15981,20 @@ function createOnscreenKeyboard() {
     createButton(set1, row1);
     createButton(set2, row2);
 
+    document.getElementById("enter").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M19,6a1,1,0,0,0-1,1v4a1,1,0,0,1-1,1H7.41l1.3-1.29A1,1,0,0,0,7.29,9.29l-3,3a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l3,3a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L7.41,14H17a3,3,0,0,0,3-3V7A1,1,0,0,0,19,6Z"/></svg>';
 
 
-    // set0.forEach((key) => {
-    //     const buttonElement = document.createElement("button");
-    //     buttonElement.textContent = key;
-    //     buttonElement.setAttribute("id", key);
-    //     buttonElement.classList.add("keyboard-button");
-    //     buttonElement.dataset.state = "neutral";
-    //     buttonElement.dataset.key = key;
-    //     row0.append(buttonElement);
-    // });
+    document.getElementById("delete").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"> preserveAspectRatio="xMidYMid meet" <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z"></path></svg>';
 
-    // set1.forEach((key) => {
-    //     const buttonElement = document.createElement("button");
-    //     buttonElement.textContent = key;
-    //     buttonElement.setAttribute("id", key);
-    //     buttonElement.classList.add("keyboard-button");
-    //     buttonElement.dataset.state = "neutral";
-    //     buttonElement.dataset.key = key;
-    //     row1.append(buttonElement);
-    // });
+    document.getElementById("ai").innerHTML = '<svg class="icon icon-tabler icon-tabler-bulb" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" stroke="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7M9 16a5 5 0 1 1 6 0 3.5 3.5 0 0 0-1 3 2 2 0 0 1-4 0 3.5 3.5 0 0 0-1-3M9.7 17h4.6"/></svg>';
 
-    // set2.forEach((key) => {
-    //     const buttonElement = document.createElement("button");
-    //     buttonElement.textContent = key;
-    //     buttonElement.setAttribute("id", key);
-    //     buttonElement.classList.add("keyboard-button");
-    //     buttonElement.dataset.state = "neutral";
-    //     buttonElement.dataset.key = key;
-    //     row2.append(buttonElement);
-    // });
+    // let spacer1 = document.createElement("div");
+    // spacer1.classList.add("spacer");
+    // document.getElementById("keyboard-row-1").prepend(spacer1)
 
-    // document.getElementById("enter").classList.add("one-and-half");
-    // document.getElementById("enter").classList.add("game-icon");
-    document.getElementById("enter").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="black" d="M19,6a1,1,0,0,0-1,1v4a1,1,0,0,1-1,1H7.41l1.3-1.29A1,1,0,0,0,7.29,9.29l-3,3a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l3,3a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L7.41,14H17a3,3,0,0,0,3-3V7A1,1,0,0,0,19,6Z"/></svg>';
-
-
-
-
-    // document.getElementById("delete").classList.add("one-and-half");
-    // document.getElementById("delete").classList.add("game-icon");
-    document.getElementById("delete").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"> preserveAspectRatio="xMidYMid meet" <path fill="black" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z"></path></svg>';
-
-    let spacer1 = document.createElement("div");
-    spacer1.classList.add("spacer");
-    document.getElementById("keyboard-row-1").prepend(spacer1)
-
-    let spacer2 = document.createElement("div");
-    spacer2.classList.add("spacer");
-    document.getElementById("keyboard-row-1").appendChild(spacer2)
+    // let spacer2 = document.createElement("div");
+    // spacer2.classList.add("spacer");
+    // document.getElementById("keyboard-row-1").appendChild(spacer2)
 
     return;
 }
