@@ -15344,7 +15344,7 @@ function eliminateWords() {
 
 function suggestWord() {
     if (game.turn === 1) {
-        return game.initSuggestList.random();
+        return game.initSuggestList.random().toUpperCase();
     }
     else {
         return game.remaining_words.random();
