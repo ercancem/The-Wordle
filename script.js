@@ -15479,12 +15479,12 @@ class Game {
     }
 
     activateKeyboard() {
-        document.addEventListener("keydown", processPhysicalKeyboardPress);
+        document.addEventListener("keydown", handlePhysicalKeyboardPress);
         return;
     }
 
     deactivateKeyboard() {
-        document.removeEventListener("keydown", processPhysicalKeyboardPress);
+        document.removeEventListener("keydown", handlePhysicalKeyboardPress);
         return;
     }
 
@@ -15494,7 +15494,7 @@ class Game {
             (event) => {
                 if (event.target.className === "keyboard-button") {
                     let key = event.target.dataset.key;
-                    processMouseClick(key);
+                    handleMouseClick(key);
                 }
             },
             {
@@ -15528,7 +15528,7 @@ game.activateOnscreenKeyboard();
 game.activateKeyboard();
 
 
-function processMouseClick(e) {
+function handleMouseClick(e) {
     if (e === "delete") {
         game.pointer.doBackspace();
         document.activeElement.blur(); //important
@@ -15540,7 +15540,7 @@ function processMouseClick(e) {
     } else if (e === "ai") {
         const suggestion = suggestWord();
         document.activeElement.blur();
-        processMessageBox("Try: " + suggestion);
+        processMessageBox("Try: " + suggestion.toUpperCase());
         setMessageBoxTimer();
     }
     else {
@@ -15551,7 +15551,7 @@ function processMouseClick(e) {
     }
 }
 
-function processPhysicalKeyboardPress(e) {
+function handlePhysicalKeyboardPress(e) {
     if (e.key === "Enter") {
         handleInput();
         return;
