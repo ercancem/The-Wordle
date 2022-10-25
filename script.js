@@ -1,3 +1,8 @@
+// import { createDomElements } from './js/dom.js';
+// import { WORDS } from './js/data.js';
+// import { DICT } from './js/data.js';
+createDomElements()
+
 const WORDS = [
     "cigar",
     "rebut",
@@ -2314,8 +2319,8 @@ const WORDS = [
     "artsy",
     "rural",
     "shave"
-]
-const DICT = [
+],
+DICT = [
     "aahed",
     "aalii",
     "aargh",
@@ -15290,10 +15295,10 @@ const DICT = [
     "shave",
 ]
 
+
 Array.prototype.random = function () {
     return this[Math.floor(Math.random() * this.length)];
 }
-
 
 // https://stackoverflow.com/a/14853974/1085805
 Array.prototype.equals = function (array) {
@@ -15303,7 +15308,7 @@ Array.prototype.equals = function (array) {
     // if the argument is the same array, we can be sure the contents are same as well
     if (array === this)
         return true;
-    // compare lengths - can save a lot of time 
+    // compare lengths - can save a lot of time
     if (this.length != array.length)
         return false;
 
@@ -15322,37 +15327,10 @@ Array.prototype.equals = function (array) {
     return true;
 }
 
-
-
-function eliminateWords() {
-    if (game.history.size === 0) {
-        return;
-    }
-    const t = game.turn;
-    const guess = game.history.get(t)[0];
-    const feedback = game.history.get(t)[1];
-    const words = game.remaining_words
-    const rm = new Array();
-    for (let word of words) {
-        if (evaluateGuess(guess, word).equals(feedback)) {
-            rm.push(word);
-        }
-    }
-    return rm;
-
+Array.prototype.frequencies = function () {
+    const map = this.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
+    return [...map.values()];
 }
-
-function suggestWord() {
-    if (game.turn === 1) {
-        return game.initSuggestList.random().toUpperCase();
-    }
-    else {
-        return game.remaining_words.random();
-    }
-
-}
-
-createDomElements()
 
 class Pointer {
     constructor(game) {
@@ -15456,12 +15434,206 @@ class Guess {
     }
 }
 
-class KeyboardSwitch {
-    constructor(game) {
-        this.keyboard = game;
-        this.switch = new AbortController();
+function handleMouseClick(e) {
+    if (e === "delete") {
+        game.pointer.doBackspace();
+        document.activeElement.blur(); //important
+        return;
+    } else if (e === "enter") {
+        handleInput();
+        document.activeElement.blur();
+        return;
+    } else if (e === "ai") {
+        const suggestion = game.suggestWord();
+        document.activeElement.blur();
+        processMessageBox("Try: " + suggestion.toUpperCase());
+        setMessageBoxTimer();
+    }
+    else {
+        growTiles();
+        game.pointer.writeContent(e);
+        document.activeElement.blur();
+        return;
     }
 }
+
+function handlePhysicalKeyboardPress(e) {
+    if (e.key === "Enter") {
+        handleInput();
+        return;
+    }
+
+    if (e.key === "Backspace" || e.key === "Delete") {
+        game.pointer.doBackspace();
+        return;
+    }
+
+    if (e.key.match(/^[A-Za-z]$/)) {
+        growTiles();
+        game.pointer.writeContent(e.key);
+        return;
+    }
+}
+
+function handleInvalidSubmission(message) {
+    processMessageBox(message);
+    setMessageBoxTimer();
+    shakeTiles();
+    return;
+}
+
+function processMessageBox(message) {
+    var messageBox = document.getElementById("message-box");
+    messageBox.textContent = message;
+    messageBox.style.visibility = "visible";
+    return;
+}
+
+function correctGuess(message) {
+    game.colorGuessLetters();
+    processMessageBox(message);
+    shakeTiles("dance");
+    game.deactivateKeyboard();
+    game.deactivateOnscreenKeyboard();
+}
+
+function correctGuessAtTurn(lowerRowNumber, higherRowNumber = lowerRowNumber) {
+    return (game.guess.word === game.answer && game.pointer.row >= lowerRowNumber && game.pointer.row <= higherRowNumber)
+}
+
+function handleInput() {
+    if (game.pointer.isEmpty()) {
+        handleInvalidSubmission("Not enough letters!")
+        return;
+    }
+    if (!DICT.includes(game.guess.word)) {
+        handleInvalidSubmission("Not in the dictionary!");
+        return;
+    }
+    if (game.pointer.row == (game.guessNumber - 1) && game.guess.word != game.answer) {
+        toggleDatasetIsActiveRow();
+        colorGuessLetters();
+        game.gameOver();
+        return;
+    }
+    if (correctGuessAtTurn(0)) {
+        toggleDatasetIsActiveRow();
+        correctGuess("That was hell of a guess!")
+        return;
+    }
+    if (correctGuessAtTurn(1, 3)) {
+        toggleDatasetIsActiveRow();
+        correctGuess("Magnificient!")
+        return;
+    }
+    if (correctGuessAtTurn(4)) {
+        toggleDatasetIsActiveRow();
+        correctGuess("Good!")
+        return;
+    }
+    if (correctGuessAtTurn(5)) {
+        toggleDatasetIsActiveRow();
+        correctGuess("Phew!")
+        return;
+    }
+
+    // user made a valid guess
+    // and game is not over
+    const feedback = game.maskLetters();
+    toggleDatasetIsActiveRow();
+    game.history.set(game.turn, [game.guess.word, feedback.join("")]);
+    game.updateRemainingWords();
+    game.updateTurn();
+    game.colorGuessLetters();
+    flipTiles();
+    game.pointer.gotoNextRow();
+    toggleDatasetIsActiveRow();
+    return;
+}
+
+function shakeTiles() {
+    const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
+    array.forEach((tile) => {
+        tile.classList.add("shake");
+        tile.addEventListener(
+            "animationend",
+            () => {
+                tile.classList.remove("shake");
+                // tile.dataset.animation =
+            }, {
+            once: true,
+        }
+        );
+    });
+}
+
+
+function growTiles() {
+    const tile = document.getElementById("row-index-" + game.pointer.row + "-column-index-" + game.pointer.column);
+    tile.classList.add("grow-and-shrink");
+    tile.addEventListener(
+        "animationend",
+        () => {
+            tile.classList.remove("grow-and-shrink");
+            // tile.dataset.animation =
+        }, {
+        once: true,
+    }
+    );
+
+}
+
+
+function flipTiles() {
+    const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
+    array.forEach((tile) => {
+
+        // tile.classList.remove("flip-off");
+        tile.classList.add("flip");
+        tile.dataset.animation = "on";
+        tile.style.setProperty('--flipColor', "--" + tile.dataset.color);
+        tile.addEventListener(
+            "animationend",
+            () => {
+                // tile.classList.add("flip-off");
+                tile.classList.remove("flip");
+                tile.dataset.animation = "idle"
+            }, {
+            once: true,
+        }
+        );
+    });
+}
+
+function getTileFromCurrentRow(columnNumber) {
+    return document.getElementById(
+        "row-index-" + game.pointer.row + "-column-index-" + columnNumber
+    );
+}
+
+function toggleMessageBox() {
+    var messageBox = document.getElementById("message-box");
+    messageBox.style.visibility = "hidden";
+    return;
+}
+
+function setMessageBoxTimer(duration = 1500) {
+    setTimeout(() => {
+        toggleMessageBox();
+    }, 1500);
+    return;
+}
+
+function toggleDatasetIsActiveRow() {
+    const row = document.getElementById("row-index-" + game.pointer.row);
+    if (row.dataset.isActiveRow == "true") {
+        row.dataset.isActiveRow = "false";
+    }
+    else {
+        row.dataset.isActiveRow = "true";
+    }
+}
+
 
 class Game {
     constructor(letterNumber = 5, guessNumber = 6) {
@@ -15518,254 +15690,161 @@ class Game {
     }
 
     updateRemainingWords() {
-        this.remaining_words = eliminateWords();
+        this.remaining_words = this.eliminateWords();
+    }
+
+    maskLetters(guess = this.guess.word, secret = this.answer) {
+        const n = secret.length;
+        let maskedLetters = Array(n).fill(0);
+        for (let i = 0; i < n; i++) {
+            if (guess[i] === secret[i]) {
+                maskedLetters[i] = 2;
+                secret = secret.replace(guess[i], " ");
+            }
+        }
+        for (let i = 0; i < n; i++) {
+            if (maskedLetters[i] !== 2 && secret.includes(guess[i])) {
+                maskedLetters[i] = 1;
+                secret = secret.replace(guess[i], " ");
+            }
+        }
+        return maskedLetters;
+    }
+
+
+    eliminateWords() {
+        if (this.history.size === 0) {
+            return;
+        }
+        const t = game.turn;
+        const guess = game.history.get(t)[0];
+        const feedback = game.history.get(t)[1];
+        const words = game.remaining_words
+        const rm = new Array();
+        for (let word of words) {
+            if (this.maskLetters(guess, word).equals(feedback)) {
+                rm.push(word);
+            }
+        }
+        return rm;
+    }
+
+    suggestWord() {
+        if (this.turn === 1) {
+            console.log("Inside 1st if")
+            return this.initSuggestList.random().toUpperCase();
+        }
+        if (this.remaining_words.length < 3) {
+            console.log("Inside 2nd if")
+            return this.remaining_words[0];
+        }
+        else {
+            console.log("Inside 3rd if")
+            return this.findBestGuess(this.remaining_words)
+        }
+
+    }
+
+    guesslistMasks(remaining_words) {
+        const new_rm = remaining_words;
+        const word_pool = (remaining_words.length < 50) ? WORDS : remaining_words;
+        // console.log("new_rm: " + new_rm);
+        // console.log("word pool: " + word_pool)
+        const wrm = new Map();
+        for (let word of new_rm) {
+            let list = new Array();
+            for (let w of word_pool) {
+                if (word != w) {
+                    list.push(this.maskLetters(word, w).join(""))
+                }
+            }
+            wrm.set(word, list);
+        }
+        return wrm
+    }
+
+    guesslistFrequencies(map) {
+        const newMap = new Map();
+        for (const [key, value] of map.entries()) {
+            // console.log(key, value.frequencies());
+            newMap.set(key, value.frequencies())
+        }
+        return newMap;
+    }
+
+    guesslistShannonEntropy(map) {
+        const newMap = new Map();
+        for (const [key, value] of map.entries()) {
+            // console.log(key, value.frequencies());
+            newMap.set(key, this.calcShannonEntropy(value))
+        }
+        return newMap;
+    }
+
+    calcShannonEntropy(arr) {
+        const sum = arr.reduce((partialSum, a) => partialSum + a, 0);
+        let entropy = -1;
+        for (const number of arr) {
+            var pX = (number / sum)
+            entropy += pX * Math.log2(pX);
+        }
+        return -entropy;
+    }
+
+    findBestGuess(remaining_words) {
+        // console.log("Inside fbg. rm: " + remaining_words)
+        const glm = this.guesslistMasks(remaining_words);
+        const glf = this.guesslistFrequencies(glm);
+        const shannon = this.guesslistShannonEntropy(glf);
+        let max = 0;
+        let maxKey = "";
+
+        for (const [key, value] of shannon.entries()) {
+            if (value > max) {
+                max = value;
+                maxKey = key;
+            }
+        }
+        return maxKey;
+    }
+
+    colorGuessLetters() {
+        const processedLetters = this.maskLetters();
+        processedLetters.forEach((number, index) => {
+            var square = getTileFromCurrentRow(index);
+            var squareValue = square.textContent.toLowerCase();
+            var key = document.getElementById(squareValue);
+            if (number == 2) {
+                square.classList.add("final-green");
+                square.dataset.color = "green"
+                key.dataset.state = "correct";
+            } else if (number == 1) {
+                square.classList.add("final-yellow");
+                if (key.dataset.state !== "correct") {
+                    key.dataset.state = "nonpositional";
+                    square.dataset.color = "yellow"
+                }
+            } else {
+                square.classList.add("final-dark-gray");
+                if (key.dataset.state === "neutral") {
+                    key.dataset.state = "incorrect";
+                    square.dataset.color = "gray"
+                }
+            }
+        });
+        return;
     }
 }
 
 const game = new Game();
-const onscreenKeyboardSwitch = new AbortController();
 game.activateOnscreenKeyboard();
 game.activateKeyboard();
 
 
-function handleMouseClick(e) {
-    if (e === "delete") {
-        game.pointer.doBackspace();
-        document.activeElement.blur(); //important
-        return;
-    } else if (e === "enter") {
-        handleInput();
-        document.activeElement.blur();
-        return;
-    } else if (e === "ai") {
-        const suggestion = suggestWord();
-        document.activeElement.blur();
-        processMessageBox("Try: " + suggestion.toUpperCase());
-        setMessageBoxTimer();
-    }
-    else {
-        growTiles();
-        game.pointer.writeContent(e);
-        document.activeElement.blur();
-        return;
-    }
-}
 
-function handlePhysicalKeyboardPress(e) {
-    if (e.key === "Enter") {
-        handleInput();
-        return;
-    }
-
-    if (e.key === "Backspace" || e.key === "Delete") {
-        game.pointer.doBackspace();
-        return;
-    }
-
-    if (e.key.match(/^[A-Za-z]$/)) {
-        growTiles();
-        game.pointer.writeContent(e.key);
-        return;
-    }
-}
-
-function invalidSubmission(message) {
-    processMessageBox(message);
-    setMessageBoxTimer();
-    shakeTiles();
-    return;
-}
-
-function processMessageBox(message) {
-    var messageBox = document.getElementById("message-box");
-    messageBox.textContent = message;
-    messageBox.style.visibility = "visible";
-    return;
-}
-
-function correctGuess(message) {
-    colorGuessLetters();
-    processMessageBox(message);
-    shakeTiles("dance");
-    game.deactivateKeyboard();
-    game.deactivateOnscreenKeyboard();
-}
-
-function correctGuessAtTurn(lowerRowNumber, higherRowNumber = lowerRowNumber) {
-    return (game.guess.word === game.answer && game.pointer.row >= lowerRowNumber && game.pointer.row <= higherRowNumber)
-}
-
-function handleInput() {
-    if (game.pointer.isEmpty()) {
-        invalidSubmission("Not enough letters!")
-        return;
-    }
-    else if (!DICT.includes(game.guess.word)) {
-        invalidSubmission("Not in the dictionary!");
-        return;
-    }
-    else if (game.pointer.row == (game.guessNumber - 1) && game.guess.word != game.answer) {
-        toggleDatasetIsActiveRow();
-        colorGuessLetters();
-        game.gameOver();
-        return;
-    }
-    else if (correctGuessAtTurn(0)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("That was hell of a guess!")
-        return;
-    }
-    else if (correctGuessAtTurn(1, 3)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("Magnificient!")
-        return;
-    }
-    else if (correctGuessAtTurn(4)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("Good!")
-        return;
-    }
-    else if (correctGuessAtTurn(5)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("Phew!")
-        return;
-    }
-    else {
-        // user made a valid guess
-        const feedback = evaluateGuess();
-        toggleDatasetIsActiveRow();
-        game.history.set(game.turn, [game.guess.word, feedback.join("")]);
-        game.updateRemainingWords();
-        game.updateTurn();
-        colorGuessLetters();
-        flipTiles();
-        game.pointer.gotoNextRow();
-        toggleDatasetIsActiveRow();
-        return;
-    }
-}
-
-function evaluateGuess(guess = game.guess.word, secret = game.answer) {
-    n = secret.length;
-    let colors = Array(n).fill(0);
-    for (let i = 0; i < n; i++) {
-        if (guess[i] === secret[i]) {
-            colors[i] = 2;
-            secret = secret.replace(guess[i], " ");
-        }
-    }
-    for (let i = 0; i < n; i++) {
-        if (colors[i] !== 2 && secret.includes(guess[i])) {
-            colors[i] = 1;
-            secret = secret.replace(guess[i], " ");
-        }
-    }
-    return colors;
-}
-
-function colorGuessLetters() {
-    const processedLetters = evaluateGuess();
-    processedLetters.forEach((number, index) => {
-        var square = getTileFromCurrentRow(index);
-        var squareValue = square.textContent.toLowerCase();
-        var key = document.getElementById(squareValue);
-        if (number == 2) {
-            square.classList.add("final-green");
-            square.dataset.color = "green"
-            key.dataset.state = "correct";
-        } else if (number == 1) {
-            square.classList.add("final-yellow");
-            if (key.dataset.state !== "correct") {
-                key.dataset.state = "nonpositional";
-                square.dataset.color = "yellow"
-            }
-        } else {
-            square.classList.add("final-dark-gray");
-            if (key.dataset.state === "neutral") {
-                key.dataset.state = "incorrect";
-                square.dataset.color = "gray"
-            }
-        }
-    });
-    return;
-}
-
-
-
-function shakeTiles() {
-    const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
-    array.forEach((tile) => {
-        tile.classList.add("shake");
-        tile.addEventListener(
-            "animationend",
-            () => {
-                tile.classList.remove("shake");
-                // tile.dataset.animation =
-            }, {
-            once: true,
-        }
-        );
-    });
-}
-
-
-function growTiles() {
-    const tile = document.getElementById("row-index-" + game.pointer.row + "-column-index-" + game.pointer.column);
-    tile.classList.add("grow-and-shrink");
-    tile.addEventListener(
-        "animationend",
-        () => {
-            tile.classList.remove("grow-and-shrink");
-            // tile.dataset.animation =
-        }, {
-        once: true,
-    }
-    );
-
-} createModal
-
-
-function flipTiles() {
-    const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
-    array.forEach((tile) => {
-
-        // tile.classList.remove("flip-off");
-        tile.classList.add("flip");
-        tile.dataset.animation = "on";
-        tile.style.setProperty('--flipColor', "--" + tile.dataset.color);
-        tile.addEventListener(
-            "animationend",
-            () => {
-                // tile.classList.add("flip-off");
-                tile.classList.remove("flip");
-                tile.dataset.animation = "idle"
-            }, {
-            once: true,
-        }
-        );
-    });
-}
-
-function getTileFromCurrentRow(columnNumber) {
-    return document.getElementById(
-        "row-index-" + game.pointer.row + "-column-index-" + columnNumber
-    );
-}
-
-function toggleMessageBox() {
-    var messageBox = document.getElementById("message-box");
-    messageBox.style.visibility = "hidden";
-    return;
-}
-
-function setMessageBoxTimer(duration = 1500) {
-    setTimeout(() => {
-        toggleMessageBox();
-    }, 1500);
-    return;
-}
 
 //The following builds all the necessary HTML elements.
+
 function createDomElements() {
     createModal();
     createMainContainer();
@@ -15779,7 +15858,6 @@ function createDomElements() {
     createOnscreenKeyboard();
 }
 
-
 function createModal() {
     const modalOverlay = document.createElement("div");
     modalOverlay.setAttribute("id", "modal-overlay");
@@ -15789,7 +15867,6 @@ function createModal() {
     modalContent.setAttribute("id", "modal-content");
     modalContent.classList.add("modal-show");
     modalOverlay.append(modalContent);
-    // document.body.append(modal);
 
     const header = document.createElement("h1");
     header.setAttribute("id", "modal-header");
@@ -15858,7 +15935,7 @@ function createHeaderDiv(gameTitle) {
     headerDiv.setAttribute("id", "header");
     headerDiv.classList.add("header");
     const header = document.createElement("h1");
-    headerText = document.createTextNode(gameTitle);
+    const headerText = document.createTextNode(gameTitle);
     header.appendChild(headerText);
     headerDiv.appendChild(header);
     document.getElementById("main-container").append(headerDiv);
@@ -15916,13 +15993,12 @@ function createTiles() {
         for (
             let columnIndex = 0; columnIndex < 5; columnIndex++
         ) {
-            rowElement = document.createElement("div");
+            let rowElement = document.createElement("div");
             rowElement.setAttribute(
                 "id",
                 "row-index-" + rowIndex + "-column-index-" + columnIndex
             );
             rowElement.classList.add("tile");
-            // rowElement.classList.add("flip-off");
             rowElement.textContent = "";
             rowElement.dataset.isBlankTile = "true";
             rowElement.dataset.animation = "idle";
@@ -15933,22 +16009,8 @@ function createTiles() {
     document.getElementById("row-index-0").dataset.isActiveRow = "true";
 }
 
-function toggleDatasetIsActiveRow() {
-    const row = document.getElementById("row-index-" + game.pointer.row);
-    if (row.dataset.isActiveRow == "true") {
-        row.dataset.isActiveRow = "false";
-    }
-    else {
-        row.dataset.isActiveRow = "true";
-    }
-}
-
-
 function createOnscreenKeyboard() {
     const keyboard = document.getElementById("onscreen-keyboard");
-    // const set0 = new Set(["a", "b", "c", "d", "e", "f", "g", "h", "i",]);
-    // const set1 = new Set(["j", "k", "l", "m", "n", "o", "p", "q", "r",]);
-    // const set2 = new Set(["enter", "s", "t", "u", "v", "w", "x", "y", "z","delete",]);
     const set0 = new Set(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p",]);
     const set1 = new Set(["ai", "a", "s", "d", "f", "g", "h", "j", "k", "l",]);
     const set2 = new Set(["enter", "z", "x", "c", "v", "b", "n", "m", "delete"]);
@@ -15988,17 +16050,5 @@ function createOnscreenKeyboard() {
 
     document.getElementById("ai").innerHTML = '<svg class="icon icon-tabler icon-tabler-bulb" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" stroke="none"/><path d="M3 12h1m8-9v1m8 8h1M5.6 5.6l.7.7m12.1-.7-.7.7M9 16a5 5 0 1 1 6 0 3.5 3.5 0 0 0-1 3 2 2 0 0 1-4 0 3.5 3.5 0 0 0-1-3M9.7 17h4.6"/></svg>';
 
-    // let spacer1 = document.createElement("div");
-    // spacer1.classList.add("spacer");
-    // document.getElementById("keyboard-row-1").prepend(spacer1)
-
-    // let spacer2 = document.createElement("div");
-    // spacer2.classList.add("spacer");
-    // document.getElementById("keyboard-row-1").appendChild(spacer2)
-
     return;
 }
-
-
-
-
