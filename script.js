@@ -2319,8 +2319,9 @@ const WORDS = [
     "artsy",
     "rural",
     "shave"
-],
-DICT = [
+]
+
+const DICT = [
     "aahed",
     "aalii",
     "aargh",
@@ -15370,12 +15371,12 @@ class Pointer {
             return;
         } else if (!this.isEmpty()) {
             this.deleteContent();
-            game.guess.updateWord();
+            game.guess.updateContent();
             return;
         } else {
             this.column--;
             this.deleteContent();
-            game.guess.updateWord();
+            game.guess.updateContent();
             return;
         }
     }
@@ -15400,7 +15401,7 @@ class Pointer {
             this.getHtmlElement().textContent = data;
             this.getHtmlElement().dataset.isBlankTile = false;
             this.gotoNextTile();
-            game.guess.updateWord();
+            game.guess.updateContent();
             return;
         }
     }
@@ -15415,22 +15416,73 @@ class Pointer {
 class Guess {
     constructor(game) {
         this.game = game;
-        this.word = "";
+        this.content = "";
     }
 
-    updateWord() {
+    updateContent() {
         const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
         const content = array.map(div => div.textContent).join("");
-        this.word = content.toLowerCase();
+        this.content = content.toLowerCase();
         return;
     }
 
     isValid() {
-        return this.word.length == game.letterNumber;
+        return this.content.length == game.letterNumber;
     }
 
     resetWord() {
-        this.word = "";
+        this.content = "";
+    }
+
+    handleSubmission() {
+        // Check if the letter number is complete.
+        const g = this.content; //user guess
+        const a = game.answer;
+        const t = game.turn;
+        if (this.g < 5) {
+            handleInvalidSubmission("Not enough letters!")
+            return;
+        }
+        // Check if the word is in the dictionary.
+        if (!DICT.includes(g)) {
+            handleInvalidSubmission("Not in the dictionary!");
+            return;
+        }
+        // Check if game is over.
+        if (game.turn === 6 && g != a) {
+            toggleDatasetIsActiveRow();
+            colorGuessLetters();
+            game.gameOver();
+            return;
+        }
+        if (game.turn === 1 && g === a) {
+            correctGuess("That was hell of a guess!")
+            return;
+        }
+        if (game.turn < 5 && g === a){
+            correctGuess("Magnificient!")
+            return;
+        }
+        if (game.turn === 5 && g === a) {
+            correctGuess("Good!")
+            return;
+        }
+        if (game.turn === 6 && g === a) {
+            correctGuess("Phew!")
+            return;
+        }
+        // User made submission.
+        // Submission is valid and game is not over.
+        game.updateCurrMask(this.content);
+        game.updateHistory();
+        game.updateTurn();
+        game.suggestionAi.updateSuggestion();
+        colorGuessLetters();
+        animateFlipTiles();
+        toggleDatasetIsActiveRow();
+        game.pointer.gotoNextRow();
+        toggleDatasetIsActiveRow();
+        return;
     }
 }
 
@@ -15440,17 +15492,16 @@ function handleMouseClick(e) {
         document.activeElement.blur(); //important
         return;
     } else if (e === "enter") {
-        handleInput();
+        game.guess.handleSubmission();
         document.activeElement.blur();
         return;
     } else if (e === "ai") {
-        const suggestion = game.suggestWord();
         document.activeElement.blur();
-        processMessageBox("Try: " + suggestion.toUpperCase());
+        processMessageBox("Try: " + game.suggestionAi.suggestion.toUpperCase());
         setMessageBoxTimer();
     }
     else {
-        growTiles();
+        animateLetterInputEffect();
         game.pointer.writeContent(e);
         document.activeElement.blur();
         return;
@@ -15459,7 +15510,7 @@ function handleMouseClick(e) {
 
 function handlePhysicalKeyboardPress(e) {
     if (e.key === "Enter") {
-        handleInput();
+        game.guess.handleSubmission();
         return;
     }
 
@@ -15469,7 +15520,7 @@ function handlePhysicalKeyboardPress(e) {
     }
 
     if (e.key.match(/^[A-Za-z]$/)) {
-        growTiles();
+        animateLetterInputEffect();
         game.pointer.writeContent(e.key);
         return;
     }
@@ -15478,7 +15529,7 @@ function handlePhysicalKeyboardPress(e) {
 function handleInvalidSubmission(message) {
     processMessageBox(message);
     setMessageBoxTimer();
-    shakeTiles();
+    animateShakeTiles();
     return;
 }
 
@@ -15490,68 +15541,16 @@ function processMessageBox(message) {
 }
 
 function correctGuess(message) {
-    game.colorGuessLetters();
+    toggleDatasetIsActiveRow();
+    game.updateCurrMask();
+    colorGuessLetters();
     processMessageBox(message);
-    shakeTiles("dance");
+    animateShakeTiles("dance");
     game.deactivateKeyboard();
     game.deactivateOnscreenKeyboard();
 }
 
-function correctGuessAtTurn(lowerRowNumber, higherRowNumber = lowerRowNumber) {
-    return (game.guess.word === game.answer && game.pointer.row >= lowerRowNumber && game.pointer.row <= higherRowNumber)
-}
-
-function handleInput() {
-    if (game.pointer.isEmpty()) {
-        handleInvalidSubmission("Not enough letters!")
-        return;
-    }
-    if (!DICT.includes(game.guess.word)) {
-        handleInvalidSubmission("Not in the dictionary!");
-        return;
-    }
-    if (game.pointer.row == (game.guessNumber - 1) && game.guess.word != game.answer) {
-        toggleDatasetIsActiveRow();
-        colorGuessLetters();
-        game.gameOver();
-        return;
-    }
-    if (correctGuessAtTurn(0)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("That was hell of a guess!")
-        return;
-    }
-    if (correctGuessAtTurn(1, 3)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("Magnificient!")
-        return;
-    }
-    if (correctGuessAtTurn(4)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("Good!")
-        return;
-    }
-    if (correctGuessAtTurn(5)) {
-        toggleDatasetIsActiveRow();
-        correctGuess("Phew!")
-        return;
-    }
-
-    // user made a valid guess
-    // and game is not over
-    const feedback = game.maskLetters();
-    toggleDatasetIsActiveRow();
-    game.history.set(game.turn, [game.guess.word, feedback.join("")]);
-    game.updateRemainingWords();
-    game.updateTurn();
-    game.colorGuessLetters();
-    flipTiles();
-    game.pointer.gotoNextRow();
-    toggleDatasetIsActiveRow();
-    return;
-}
-
-function shakeTiles() {
+function animateShakeTiles() {
     const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
     array.forEach((tile) => {
         tile.classList.add("shake");
@@ -15568,7 +15567,7 @@ function shakeTiles() {
 }
 
 
-function growTiles() {
+function animateLetterInputEffect() {
     const tile = document.getElementById("row-index-" + game.pointer.row + "-column-index-" + game.pointer.column);
     tile.classList.add("grow-and-shrink");
     tile.addEventListener(
@@ -15584,7 +15583,7 @@ function growTiles() {
 }
 
 
-function flipTiles() {
+function animateFlipTiles() {
     const array = Array.from(document.getElementById("row-index-" + game.pointer.row).children);
     array.forEach((tile) => {
 
@@ -15635,6 +15634,181 @@ function toggleDatasetIsActiveRow() {
 }
 
 
+function maskLetters(guess = game.guess.content, secret = game.answer) {
+    const n = secret.length;
+    let maskedLetters = Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+        if (guess[i] === secret[i]) {
+            maskedLetters[i] = 2;
+            secret = secret.replace(guess[i], " ");
+        }
+    }
+    for (let i = 0; i < n; i++) {
+        if (maskedLetters[i] !== 2 && secret.includes(guess[i])) {
+            maskedLetters[i] = 1;
+            secret = secret.replace(guess[i], " ");
+        }
+    }
+    return maskedLetters;
+}
+
+
+function colorGuessLetters() {
+    // Make string an array again.
+    const maskedLettersArray = [...game.currMask];
+    maskedLettersArray.forEach((number, index) => {
+        var square = getTileFromCurrentRow(index);
+        var squareValue = square.textContent.toLowerCase();
+        var key = document.getElementById(squareValue);
+        if (number == 2) {
+            square.classList.add("final-green");
+            square.dataset.color = "green"
+            key.dataset.state = "correct";
+        } else if (number == 1) {
+            square.classList.add("final-yellow");
+            if (key.dataset.state !== "correct") {
+                key.dataset.state = "nonpositional";
+                square.dataset.color = "yellow"
+            }
+        } else {
+            square.classList.add("final-dark-gray");
+            if (key.dataset.state === "neutral") {
+                key.dataset.state = "incorrect";
+                square.dataset.color = "gray"
+            }
+        }
+    });
+    return;
+}
+
+
+class SuggestionAI {
+    constructor(game) {
+        this.game = game;
+        this.initSuggestList = ["slice", "tried", "crane", "leant", "close", "trice", "train", "slane", "lance", "trace", "salet", "soare", "arose", "arise", "raise", "aisle", "store", "roate"];
+        this.suggestion = this.initSuggestList.random();
+        this.wordPool = WORDS;
+    }
+
+    updateSuggestion() {
+        if (this.turn === 1) {
+            return this.suggestion;
+        }
+
+        this.wordPool = this.updateWordPool();
+
+        if (this.wordPool.length < 3) {
+            this.suggestion = this.wordPool[0];
+            return;
+        }
+        if (this.wordPool.length < 20) {
+            // console.log("Getting to absoluteBestGuess")
+            this.suggestion = this.findAbsoluteBestGuess();
+            return;
+        } else {
+            // console.log("Getting to findBestGuess")
+            this.suggestion = this.findBestGuess();
+            return;
+        }
+
+    }
+
+    updateWordPool() {
+        const newWordPool = new Array();
+        for (let word of this.wordPool) {
+            if (maskLetters(game.currGuess, word).equals(game.currMask)) {
+                newWordPool.push(word);
+            }
+        }
+        return newWordPool;
+    }
+
+    findBestGuess() {
+        const pool = this.wordPool;
+        const glm = this.guesslistMasks(pool);
+        const glf = this.guesslistFrequencies(glm);
+        const shannon = this.guesslistShannonEntropy(glf);
+        return this.calcShannonMax(shannon)[0];
+    }
+
+    findAbsoluteBestGuess() {
+        // console.log("INSIDE ABSOLUTE")
+        const pool = this.wordPool;
+        let absoluteBestKey = "";
+        let absoluteBestValue = 0;
+        for (let word of WORDS) {
+            const glm = this.guesslistMasks(pool.concat(word));
+            const glf = this.guesslistFrequencies(glm);
+            const shannon = this.guesslistShannonEntropy(glf);
+            const shannonLocalMax = this.calcShannonMax(shannon);
+            if (shannonLocalMax[1] > absoluteBestValue) {
+                absoluteBestKey = shannonLocalMax[0];
+                absoluteBestValue = shannonLocalMax[1];
+                // console.log("NEW ABSOLUTE BEST: " + absoluteBestKey);
+            }
+        }
+        return absoluteBestKey;
+    }
+
+
+    guesslistMasks(pool = this.wordPool) {
+        // const wordPool = pool
+        const maskedWordPool = new Map();
+        for (let word of pool) {
+            let list = new Array();
+            for (let w of pool) {
+                if (word != w) {
+                    list.push(maskLetters(word, w).join(""))
+                }
+            }
+            maskedWordPool.set(word, list);
+        }
+        return maskedWordPool
+    }
+
+    guesslistFrequencies(map) {
+        const newMap = new Map();
+        for (const [key, value] of map.entries()) {
+            newMap.set(key, value.frequencies())
+        }
+        return newMap;
+    }
+
+    guesslistShannonEntropy(map) {
+        const newMap = new Map();
+        for (const [key, value] of map.entries()) {
+            newMap.set(key, this.calcShannonEntropy(value))
+        }
+        return newMap;
+    }
+
+    calcShannonEntropy(arr) {
+        const sum = arr.reduce((partialSum, a) => partialSum + a, 0);
+        let entropy = -1;
+        for (const number of arr) {
+            var pX = (number / sum)
+            entropy += pX * Math.log2(pX);
+        }
+        return -entropy;
+    }
+
+    calcShannonMax(map) {
+        let maxValue = -1;
+        let maxKey = "";
+        for (const [key, value] of map.entries()) {
+            if (value > maxValue) {
+                maxValue = value;
+                maxKey = key;
+            }
+        }
+        return [maxKey, maxValue];
+    }
+
+
+
+}
+
+
 class Game {
     constructor(letterNumber = 5, guessNumber = 6) {
         this.letterNumber = letterNumber;
@@ -15642,12 +15816,17 @@ class Game {
         this.answer = WORDS[Math.floor(Math.random() * WORDS.length)];
         this.pointer = new Pointer(this);
         this.guess = new Guess(this);
+        // this.currGuess = this.guess.content
         this.keyboard = document.getElementById("onscreen-keyboard");
         this.onscreenKeyboardSwitch = new AbortController();
-        this.initSuggestList = ["slice", "tried", "crane", "leant", "close", "trice", "train", "slane", "lance", "trace", "salet", "soare", "arose", "arise", "raise", "aisle", "store", "roate"];
-        this.history = new Map();
-        this.remaining_words = WORDS;
-        this.turn = this.history.size + 1;
+        // this.initSuggestList = ["slice", "tried", "crane", "leant", "close", "trice", "train", "slane", "lance", "trace", "salet", "soare", "arose", "arise", "raise", "aisle", "store", "roate"];
+        this.history = new Array();
+        // this.suggestionPool = WORDS;
+        this.turn = 1;
+        this.currMask = "";
+        this.suggestionAi = new SuggestionAI();
+        // this.suggestion = this.suggestionAi.suggestion;
+        // this.currSuggestion = this.initSuggestList.random();
     }
 
     activateKeyboard() {
@@ -15689,150 +15868,14 @@ class Game {
         this.turn++;
     }
 
-    updateRemainingWords() {
-        this.remaining_words = this.eliminateWords();
+    updateHistory(guess = this.guess.content, mask = this.currMask) {
+        // console.log(guess, mask);
+        this.history.push([guess, mask]);
+        // console.log(history);
     }
 
-    maskLetters(guess = this.guess.word, secret = this.answer) {
-        const n = secret.length;
-        let maskedLetters = Array(n).fill(0);
-        for (let i = 0; i < n; i++) {
-            if (guess[i] === secret[i]) {
-                maskedLetters[i] = 2;
-                secret = secret.replace(guess[i], " ");
-            }
-        }
-        for (let i = 0; i < n; i++) {
-            if (maskedLetters[i] !== 2 && secret.includes(guess[i])) {
-                maskedLetters[i] = 1;
-                secret = secret.replace(guess[i], " ");
-            }
-        }
-        return maskedLetters;
-    }
-
-
-    eliminateWords() {
-        if (this.history.size === 0) {
-            return;
-        }
-        const t = game.turn;
-        const guess = game.history.get(t)[0];
-        const feedback = game.history.get(t)[1];
-        const words = game.remaining_words
-        const rm = new Array();
-        for (let word of words) {
-            if (this.maskLetters(guess, word).equals(feedback)) {
-                rm.push(word);
-            }
-        }
-        return rm;
-    }
-
-    suggestWord() {
-        if (this.turn === 1) {
-            console.log("Inside 1st if")
-            return this.initSuggestList.random().toUpperCase();
-        }
-        if (this.remaining_words.length < 3) {
-            console.log("Inside 2nd if")
-            return this.remaining_words[0];
-        }
-        else {
-            console.log("Inside 3rd if")
-            return this.findBestGuess(this.remaining_words)
-        }
-
-    }
-
-    guesslistMasks(remaining_words) {
-        const new_rm = remaining_words;
-        const word_pool = (remaining_words.length < 50) ? WORDS : remaining_words;
-        // console.log("new_rm: " + new_rm);
-        // console.log("word pool: " + word_pool)
-        const wrm = new Map();
-        for (let word of new_rm) {
-            let list = new Array();
-            for (let w of word_pool) {
-                if (word != w) {
-                    list.push(this.maskLetters(word, w).join(""))
-                }
-            }
-            wrm.set(word, list);
-        }
-        return wrm
-    }
-
-    guesslistFrequencies(map) {
-        const newMap = new Map();
-        for (const [key, value] of map.entries()) {
-            // console.log(key, value.frequencies());
-            newMap.set(key, value.frequencies())
-        }
-        return newMap;
-    }
-
-    guesslistShannonEntropy(map) {
-        const newMap = new Map();
-        for (const [key, value] of map.entries()) {
-            // console.log(key, value.frequencies());
-            newMap.set(key, this.calcShannonEntropy(value))
-        }
-        return newMap;
-    }
-
-    calcShannonEntropy(arr) {
-        const sum = arr.reduce((partialSum, a) => partialSum + a, 0);
-        let entropy = -1;
-        for (const number of arr) {
-            var pX = (number / sum)
-            entropy += pX * Math.log2(pX);
-        }
-        return -entropy;
-    }
-
-    findBestGuess(remaining_words) {
-        // console.log("Inside fbg. rm: " + remaining_words)
-        const glm = this.guesslistMasks(remaining_words);
-        const glf = this.guesslistFrequencies(glm);
-        const shannon = this.guesslistShannonEntropy(glf);
-        let max = 0;
-        let maxKey = "";
-
-        for (const [key, value] of shannon.entries()) {
-            if (value > max) {
-                max = value;
-                maxKey = key;
-            }
-        }
-        return maxKey;
-    }
-
-    colorGuessLetters() {
-        const processedLetters = this.maskLetters();
-        processedLetters.forEach((number, index) => {
-            var square = getTileFromCurrentRow(index);
-            var squareValue = square.textContent.toLowerCase();
-            var key = document.getElementById(squareValue);
-            if (number == 2) {
-                square.classList.add("final-green");
-                square.dataset.color = "green"
-                key.dataset.state = "correct";
-            } else if (number == 1) {
-                square.classList.add("final-yellow");
-                if (key.dataset.state !== "correct") {
-                    key.dataset.state = "nonpositional";
-                    square.dataset.color = "yellow"
-                }
-            } else {
-                square.classList.add("final-dark-gray");
-                if (key.dataset.state === "neutral") {
-                    key.dataset.state = "incorrect";
-                    square.dataset.color = "gray"
-                }
-            }
-        });
-        return;
+    updateCurrMask(guess) {
+        this.currMask = maskLetters(guess).join("");
     }
 }
 
