@@ -15680,12 +15680,12 @@ function colorGuessLetters() {
     });
     return;
 }
-
+// alter', 'cater', 'close', 'crate', 'crone', 'lance', 'react', 'slant', 'stole',
 
 class SuggestionAI {
     constructor(game) {
         this.game = game;
-        this.initSuggestList = ["slice", "tried", "crane", "leant", "close", "trice", "train", "slane", "lance", "trace", "salet", "soare", "arose", "arise", "raise", "aisle", "store", "roate"];
+        this.initSuggestList = ['aisle', 'alter', 'arise', 'arose', 'cater','close', 'crane', 'crate', 'lance', 'leant', 'raise', 'react', 'roate', 'salet', 'slane', 'slant', 'slice', 'soare', 'store', 'trace', 'train', 'trice', 'tried'];
         this.suggestion = this.initSuggestList.random();
         this.wordPool = WORDS;
     }
@@ -15752,7 +15752,6 @@ class SuggestionAI {
 
 
     guesslistMasks(pool = this.wordPool) {
-        // const wordPool = pool
         const maskedWordPool = new Map();
         for (let word of pool) {
             let list = new Array();
@@ -15816,17 +15815,12 @@ class Game {
         this.answer = WORDS[Math.floor(Math.random() * WORDS.length)];
         this.pointer = new Pointer(this);
         this.guess = new Guess(this);
-        // this.currGuess = this.guess.content
         this.keyboard = document.getElementById("onscreen-keyboard");
         this.onscreenKeyboardSwitch = new AbortController();
-        // this.initSuggestList = ["slice", "tried", "crane", "leant", "close", "trice", "train", "slane", "lance", "trace", "salet", "soare", "arose", "arise", "raise", "aisle", "store", "roate"];
         this.history = new Array();
-        // this.suggestionPool = WORDS;
         this.turn = 1;
         this.currMask = "";
         this.suggestionAi = new SuggestionAI();
-        // this.suggestion = this.suggestionAi.suggestion;
-        // this.currSuggestion = this.initSuggestList.random();
     }
 
     activateKeyboard() {
@@ -15869,9 +15863,7 @@ class Game {
     }
 
     updateHistory(guess = this.guess.content, mask = this.currMask) {
-        // console.log(guess, mask);
         this.history.push([guess, mask]);
-        // console.log(history);
     }
 
     updateCurrMask(guess) {
